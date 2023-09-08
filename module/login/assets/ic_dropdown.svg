@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="6px" height="4px" viewBox="0 0 6 4" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63 (92445) - https://sketch.com -->
+    <title>ic_dropdown</title>
+    <desc>Created with Sketch.</desc>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="登录-填手机" transform="translate(-93.000000, -375.000000)" fill="#313131">
+            <g id="input_field_cell" transform="translate(40.000000, 350.000000)">
+                <path d="M56.4,28.4666667 L58.4,25.8 C58.5656854,25.5790861 58.5209139,25.2656854 58.3,25.1 C58.2134519,25.0350889 58.1081851,25 58,25 L54,25 C53.7238576,25 53.5,25.2238576 53.5,25.5 C53.5,25.6081851 53.5350889,25.7134519 53.6,25.8 L55.6,28.4666667 C55.7656854,28.6875806 56.0790861,28.7323521 56.3,28.5666667 C56.3379028,28.5382395 56.3715729,28.5045695 56.4,28.4666667 Z" id="ic_dropdown"></path>
+            </g>
+        </g>
+    </g>
+</svg>

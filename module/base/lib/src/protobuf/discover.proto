@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "./model";
+
+message Dynamic {
+  int64 id = 1;
+  int32 uid = 2;
+  string nickName = 3;
+  string content = 4;
+  string attachment = 5;
+  string likeInfo = 6;
+  string firstCommentInfo = 7;
+  int32 commentCount = 8;
+  int64 createAt = 9;
+}
+message DynamicListResp {
+  int32 code = 1;
+  string message = 2;
+  repeated Dynamic data = 3;
+  bool hasMore = 4;
+}
+
+message Comment{
+  int32 id = 1;
+  int32 dynamicId = 2;
+  int32 senderUid = 3;
+  string senderName = 5;
+  string content = 6;
+  string replayTargetName = 7;
+  string  likeInfo = 8;
+  int64 createAt = 9;
+}
+message SubmitCommentResp {
+  int32 code = 1;
+  string  message = 2;
+  Comment data = 3;
+}
+message  CommentListResp{
+  int32 code = 1;
+  string  message = 2;
+  repeated Comment data = 3;
+  bool hasMore = 4;
+}
+

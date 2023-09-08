@@ -1,0 +1,20 @@
+diff --git a/packages/flutter/lib/src/gestures/monodrag.dart b/packages/flutter/lib/src/gestures/monodrag.dart
+index 15e6d5e9d6..7783384a59 100644
+--- a/packages/flutter/lib/src/gestures/monodrag.dart
++++ b/packages/flutter/lib/src/gestures/monodrag.dart
+@@ -619,7 +619,14 @@ class HorizontalDragGestureRecognizer extends DragGestureRecognizer {
+ 
+   @override
+   bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+-    return _globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);
++    return _globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings)&&_shouldAccpet();
++  }
++  bool _shouldAccpet() {
++    // 单指获胜
++    if (_velocityTrackers.keys.length == 1) {
++      return true;
++    }
++    return false;
+   }
+ 
+   @override

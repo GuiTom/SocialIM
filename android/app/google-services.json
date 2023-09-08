@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1001223074900",
+    "project_id": "holley-e08db",
+    "storage_bucket": "holley-e08db.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1001223074900:android:267cce182e16cba5b229c1",
+        "android_client_info": {
+          "package_name": "com.gamepark.cc.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1001223074900-469m91tge1imp3gs3kqkkdp81qsd2jvm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFHsXNGM92Txm-_KzYJ2nK0o4P_lfqCKY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1001223074900-469m91tge1imp3gs3kqkkdp81qsd2jvm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1001223074900-3t5u5g17bbcfqsj4tn27mtnt06bvilmn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.gamepark.cc.ios",
+                "app_store_id": "6455226031"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

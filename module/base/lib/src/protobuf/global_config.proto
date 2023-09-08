@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package config;
+
+option go_package = "./model";
+
+message GameInfo{
+  int32 id = 1;
+  string name = 2;
+  string iconUrl = 3;
+  string url = 4;
+}
+
+message GlobalConfig {
+  int32 latestVersionCodeAndroid = 1;
+  int32 latestVersionCodeIOS = 2;
+  string downloadPageAndroid = 3;
+  string downloadPageIos = 4;
+  string  customerServicePhone = 5;
+  string  customerServiceWechat = 6;
+}
+
+message GlobalConfigInfoResp {
+  int64 code = 1;
+  string message = 2;
+  GlobalConfig data = 3;
+  repeated  GameInfo games = 4;
+}
+
