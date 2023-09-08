@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 14</title>
+    <g id="恋爱交友" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="男版-世界群聊" transform="translate(-102.000000, -746.000000)">
+            <g id="底部输入框" transform="translate(0.000000, 682.000000)">
+                <g id="底部栏-功能玩法区" transform="translate(0.000000, 56.000000)">
+                    <g id="编组" transform="translate(102.000000, 8.000000)">
+                        <rect id="矩形备份-3" fill="#D8D8D8" opacity="0" x="0" y="0" width="24" height="24"></rect>
+                        <g id="编组-2" transform="translate(2.600000, 2.600000)">
+                            <path d="M15.6707854,12.1565033 L11.7843447,8.23233199 L8.63577399,11.7980677 L5.86756248,9.95862248 L3.92760237,12.6360256" id="路径" stroke="#949494" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M7.92049238,5.55742559 C8.61215905,5.55742559 9.17049238,6.11575893 9.17049238,6.80742559 C9.17049238,7.49909226 8.61215905,8.05742559 7.92049238,8.05742559 C7.22882572,8.05742559 6.67049238,7.49909226 6.67049238,6.80742559 C6.67049238,6.11575893 7.22882572,5.55742559 7.92049238,5.55742559 Z" id="路径" fill="#949494" fill-rule="nonzero"></path>
+                            <rect id="矩形" stroke="#949494" stroke-width="1.6" fill-rule="nonzero" x="0.8" y="0.8" width="17.2" height="17.2" rx="3.221568"></rect>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

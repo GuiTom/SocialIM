@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package config;
+
+option go_package ="./model";
+
+message UploadResp {
+  int32 code = 1;
+  string message = 2;
+  string filePath = 3;
+}
