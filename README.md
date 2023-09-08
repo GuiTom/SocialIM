@@ -1,11 +1,11 @@
 # 游戏App客户端
 ## 预览 
 <div style="display: flex;">
-<img src="https://github.com/GuiTom/SocialIM/blob/main/snapShot/home.jpg" alt="替代文本" width="300" height="600">
-<img src="https://github.com/GuiTom/SocialIM/blob/main/snapShot/discover.jpg" alt="替代文本" width="300" height="600">
-<img src="https://github.com/GuiTom/SocialIM/blob/main/snapShot/message.jpg" alt="替代文本" width="300" height="600">
-<img src="https://github.com/GuiTom/SocialIM/blob/main/snapShot/contacts.jpg" alt="替代文本" width="300" height="600">
-<img src="https://github.com/GuiTom/SocialIM/blob/main/snapShot/profile.jpg" alt="替代文本" width="300" height="600">
+<img src="https://github.com/GuiTom/SocialIM/blob/master/snapShot/home.jpg" alt="替代文本" width="300" height="600">
+<img src="https://github.com/GuiTom/SocialIM/blob/master/snapShot/discover.jpg" alt="替代文本" width="300" height="600">
+<img src="https://github.com/GuiTom/SocialIM/blob/master/snapShot/message.jpg" alt="替代文本" width="300" height="600">
+<img src="https://github.com/GuiTom/SocialIM/blob/master/snapShot/contacts.jpg" alt="替代文本" width="300" height="600">
+<img src="https://github.com/GuiTom/SocialIM/blob/master/snapShot/profile.jpg" alt="替代文本" width="300" height="600">
 </div>
 
 ## 模块划分
