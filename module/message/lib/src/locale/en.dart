@@ -17,5 +17,9 @@ class En {
     "delete_session": "remove session",
     "video_call": "video call",
     "voice_call": "voice call",
+    "calling...":"正在呼叫",
+    "connected":"connected",
+    "connectting...":"connectting...",
+    "hang up":"挂断",
   };
 }

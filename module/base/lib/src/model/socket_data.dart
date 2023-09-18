@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:base/src/model/session.dart';
+import '../../base.dart';
 import '../util/type_util.dart';
 
 enum TargetType {
@@ -12,12 +13,13 @@ enum TargetType {
 }
 
 enum MsgType {
-  Reply,
+  Recipt,
   ChatText,
   ChatAudio,
   ChatImage,
   ChatRTCVideo,
   ChatRtcAudio,
+  ChatRtcHandshakeChange,
   MemberEnterExit, //成员进出
   MemberStatusChange //成员状态变化
 }
@@ -51,12 +53,9 @@ class SocketMessage {
       'extraInfo': TypeUtil.parseString(extraInfo)
     };
   }
+
   Map<String, dynamic> toRawMap() {
-    return {
-      'content': content,
-      'type': type.index,
-      'extraInfo': extraInfo
-    };
+    return {'content': content, 'type': type.index, 'extraInfo': extraInfo};
   }
 
   @override
@@ -67,7 +66,8 @@ class SocketMessage {
 
 class SocketData {
   SocketData._(
-      {required this.srcUid,
+      {required this.messageId,
+      required this.srcUid,
       required this.targetId,
       required this.targetType,
       required this.message,
@@ -81,6 +81,7 @@ class SocketData {
   final int targetId;
   final TargetType targetType;
   final int createAt; //时间戳 单位豪秒
+  final int messageId;
   final SocketMessage message;
 
   @override
@@ -99,12 +100,13 @@ class SocketData {
     }
     return message.extraInfo['groupName'] ?? '';
   }
+
   int get peerGender {
     if (targetType == TargetType.Private) {
       if (targetId == Session.uid) {
         //别人发给我的
         return message.extraInfo['senderGender'] ?? 0;
-      }else {
+      } else {
         return 0;
       }
     }
@@ -125,16 +127,6 @@ class SocketData {
     return '${targetType.name}_${targetId}';
   }
 
-  String get messageId {
-    if (targetType == TargetType.Private) {
-      if (targetId == Session.uid) {
-        //别人发给我的
-        return '${srcUid}_$createAt';
-      }
-    }
-    return '${targetId}_$createAt';
-  }
-
   Map<String, dynamic> toMMap() {
     return {
       'messageId': messageId,
@@ -150,7 +142,11 @@ class SocketData {
   }
 
   factory SocketData.fromMap(Map<String, dynamic> map) {
+    // if(map['messageId'] is String){
+    //   dog.d('${map['messageId']}');
+    // }
     return SocketData._(
+        messageId: map['messageId'],
         srcUid: map['srcUid'] ?? 0,
         targetId: map['targetId'] ?? 0,
         targetType: TargetType.values[map['targetType'] ?? 0],
@@ -168,9 +164,11 @@ class SocketData {
     int targetId = byteData.getInt32(8);
     int targetType = byteData.getInt8(12);
     int timeStamp = byteData.getInt64(13);
-    String message = length > 21 ? utf8.decode(bytes.sublist(21, length)) : '';
+    int messageId = byteData.getUint32(21);
+    String message = length > 25 ? utf8.decode(bytes.sublist(25, length)) : '';
 
     return SocketData._(
+        messageId: messageId,
         srcUid: srcUid,
         targetId: targetId,
         targetType: TargetType.values[targetType],

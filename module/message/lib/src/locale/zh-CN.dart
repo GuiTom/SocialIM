@@ -17,5 +17,9 @@ class ZhCn {
     "delete_session": "删除聊天",
     "video_call": "视频通话",
     "voice_call": "语音通话",
+    "calling...":"正在呼叫",
+    "connected":"已连接",
+    "connectting...":"正在连接",
+    "hang up":"挂断",
   };
 }

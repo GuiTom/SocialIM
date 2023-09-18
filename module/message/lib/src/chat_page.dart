@@ -344,18 +344,18 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
               package: 'message',
             ),
           ),
-          // ThrottleInkWell(
-          //   onTap: () {
-          //     _showVideoCallActionSheet(context);
-          //     FocusScope.of(context).unfocus();
-          //     _showEmojiPanel = false;
-          //     setState(() {});
-          //   },
-          //   child: SvgPicture.asset(
-          //     'assets/icon_video_call.svg',
-          //     package: 'message',
-          //   ),
-          // ),
+          ThrottleInkWell(
+            onTap: () {
+              _showVideoCallActionSheet(context);
+              FocusScope.of(context).unfocus();
+              _showEmojiPanel = false;
+              setState(() {});
+            },
+            child: SvgPicture.asset(
+              'assets/icon_video_call.svg',
+              package: 'message',
+            ),
+          ),
         ]);
   }
 
@@ -383,7 +383,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
                 onTap: () {
                   // Handle action when 'Choose from Gallery' is tapped
                   Navigator.pop(context);
-                  VideoCallPage.show(context, true,widget.targetId);
+                  VideoCallPage.show(context, true,widget.targetId,0);
                 },
               ),
               ListTile(

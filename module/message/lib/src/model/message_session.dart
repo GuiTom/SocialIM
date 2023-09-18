@@ -94,7 +94,7 @@ class MessageSession {
                 orderBy: '${MessageField.createAt.name} DESC');
         _messages.addAll(socketDatas.reversed.toList());
         for (var element in socketDatas) {
-          _messageMap[element.messageId] = element;
+          _messageMap[element.messageId.toString()] = element;
         }
       }
     });
@@ -120,7 +120,7 @@ class MessageSession {
       sds.addAll(_messages);
       _messages = sds;
       for (var element in socketDatas) {
-        _messageMap[element.messageId] = element;
+        _messageMap[element.messageId.toString()] = element;
       }
     }
     hasMore = socketDatas.length >= pageSize;
@@ -153,7 +153,7 @@ class MessageSession {
     }
     // dog.d('last message:2${_messages!.last}');
 
-    _messageMap[data.messageId] = data;
+    _messageMap[data.messageId.toString()] = data;
     eventCenter.emit('messageAded', data);
     eventCenter.emit('unReadCountChange');
   }
@@ -176,7 +176,7 @@ class MessageSession {
     } else {
       _messages.remove(data);
     }
-    await DatabaseHelper.instance.deleteMessage(data.messageId);
+    await DatabaseHelper.instance.deleteMessage(data.messageId.toString());
     if(offsetDelta>0) {
       offsetDelta -= 1;
     }else {

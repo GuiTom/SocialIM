@@ -42,7 +42,7 @@ class DatabaseHelper {
 
   static const _dbVersion = 1;
   String get dbName{
-  return '${Session.uid}_my11.db';
+  return '${Session.uid}_my14.db';
   }
   // Making it a Singleton class.
   DatabaseHelper._privateConstructor();
@@ -74,7 +74,7 @@ class DatabaseHelper {
   Future _createMessageTable(Database db, int version) async {
      await db.execute('''
           CREATE TABLE IF NOT EXISTS ${TableName.Message.name} (
-            ${MessageField.messageId.name} TEXT PRIMARY KEY,
+            ${MessageField.messageId.name} INTEGER PRIMARY KEY,
             ${MessageField.sessionId.name} TEXT NOT NULL,
             ${MessageField.srcUid.name} INTEGER,
             ${MessageField.targetId.name} INTEGER,

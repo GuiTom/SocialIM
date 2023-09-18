@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:base/base.dart';
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -12,56 +14,88 @@ class VideoCallPage extends StatefulWidget {
       required this.isVideo,
       required this.targetUid,
       this.token,
-      this.channelId});
+      this.channelId,
+      required this.messageId});
 
   final bool isVideo;
   final int targetUid;
   final String? token;
   final String? channelId;
+  final int messageId;
 
   @override
   State<StatefulWidget> createState() {
     return _State();
   }
 
-  static Future show(BuildContext context, bool isVideo, int targetUid,
-      {String? token, String? channelId}) {
+  static Future show(
+      BuildContext context, bool isVideo, int targetUid, int messageId,
+      {String? channelId}) {
     return showMaterialModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
           return VideoCallPage(
             isVideo: isVideo,
             targetUid: targetUid,
-            token: token,
             channelId: channelId,
+            messageId: messageId,
           );
         });
   }
 }
 
-enum CallStatus { Connectting, Connected, Closed }
+enum CallStatus { Calling, Connectting, Connected, Closed }
 
 class _State extends State<VideoCallPage> {
   int? _remoteUid;
   bool _localUserJoined = false;
-  late RtcEngine _engine;
+  RtcEngine? _engine;
   bool _cameraEnabled = true;
   bool _micphoneEnabled = true;
+
+  bool _remoteVideoIsOn = true;
+  int _messageId = 0;
   String? _channelId;
   String? _token;
   bool _isVideo = false;
   late int _targetUid;
-  CallStatus _callStatus = CallStatus.Connectting;
+  CallStatus _callStatus = CallStatus.Calling;
 
   @override
   void initState() {
     super.initState();
+    eventCenter.addListener('messageReceived', _messageReceived);
     _isVideo = widget.isVideo;
     _targetUid = widget.targetUid;
+    _messageId = widget.messageId;
     if (widget.channelId != null) {
       _channelId = widget.channelId!;
     }
     _getToken();
+  }
+
+  void _messageReceived(String type, Object data) async {
+    SocketData _data = data as SocketData;
+    if (_data.message.type == MsgType.ChatRtcHandshakeChange) {
+      if (!mounted) return;
+      if (_data.message.extraInfo['handshakeStatus'] == 'rejected') {
+        if (_data.targetId == Session.uid) {
+          ToastUtil.showCenter(msg: '对方已拒绝');
+        } else {
+          ToastUtil.showCenter(msg: '已拒绝');
+          return;
+        }
+      } else if (_data.message.extraInfo['handshakeStatus'] == 'canceled') {
+        ToastUtil.showCenter(msg: '已取消');
+      } else if (_data.message.extraInfo['handshakeStatus'] == 'timeout') {
+        ToastUtil.showCenter(msg: '未接听');
+      } else if (_data.message.extraInfo['handshakeStatus'] == 'finished') {
+        ToastUtil.showCenter(msg: '通话已结束');
+      }
+      await _engine!.leaveChannel();
+      if(!mounted) return;
+      Navigator.pop(context);
+    }
   }
 
   Future _getToken() async {
@@ -81,21 +115,36 @@ class _State extends State<VideoCallPage> {
 
     //create the engine
     _engine = createAgoraRtcEngine();
-    await _engine.initialize(const RtcEngineContext(
+    await _engine!.initialize(const RtcEngineContext(
       appId: Constant.agroaAppId,
       channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
     ));
 
-    _engine.registerEventHandler(
+    _engine!.registerEventHandler(
       RtcEngineEventHandler(
           onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
         debugPrint("local user ${connection.localUid} joined");
         setState(() {
           _localUserJoined = true;
           _remoteUid = _targetUid;
+          if (!isCaller) {
+            _callStatus = CallStatus.Connected;
+          }
         });
         if (widget.channelId == null) {
-          _sendNotificationToPeer();
+          _sendNotificationCallPeer();
+        }
+      }, onRejoinChannelSuccess: (RtcConnection connection, int elapsed) {
+        debugPrint("local user ${connection.localUid} joined");
+        setState(() {
+          _localUserJoined = true;
+          _remoteUid = _targetUid;
+          if (!isCaller) {
+            _callStatus = CallStatus.Connected;
+          }
+        });
+        if (widget.channelId == null) {
+          _sendNotificationCallPeer();
         }
       }, onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
         debugPrint("remote user $remoteUid joined");
@@ -103,6 +152,7 @@ class _State extends State<VideoCallPage> {
           _remoteUid = remoteUid;
           _callStatus = CallStatus.Connected;
         });
+        _startTimeCount();
       }, onUserOffline: (RtcConnection connection, int remoteUid,
               UserOfflineReasonType reason) {
         debugPrint("remote user $remoteUid left channel");
@@ -110,45 +160,56 @@ class _State extends State<VideoCallPage> {
         if (remoteUid != Session.uid) {
           Navigator.pop(context);
         }
+        _stopTimeCount();
+      }, onRemoteVideoStateChanged: (RtcConnection connection,
+              int remoteUid,
+              RemoteVideoState state,
+              RemoteVideoStateReason reason,
+              int elapsed) {
+        _remoteVideoIsOn = state != RemoteVideoState.remoteVideoStateStopped;
+        dog.d(reason);
       }, onTokenPrivilegeWillExpire: (RtcConnection connection, String token) {
         debugPrint(
             '[onTokenPrivilegeWillExpire] connection: ${connection.toJson()}, token: $token');
       }, onError: (ErrorCodeType err, String msg) {
-        debugPrint(err.toString() + '---->' + msg);
+        debugPrint('$err---->$msg');
         ToastUtil.showCenter(msg: msg);
       }),
     );
 
-    await _engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+    await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
     if (_isVideo) {
-      await _engine.enableVideo();
+      await _engine!.enableVideo();
 
-      await _engine.startPreview();
+      await _engine!.startPreview();
     }
-    if (Session.uid != _targetUid) {
-      await _engine.joinChannel(
+    if (isCaller) {
+      //是主叫方
+      await _engine!.joinChannel(
         token: _token!,
         channelId: _channelId!,
         uid: Session.uid,
         options: const ChannelMediaOptions(),
       );
     }
-    _callStatus = CallStatus.Connectting;
+    setState(() {});
+  }
+
+  bool get isCaller {
+    return widget.channelId == null;
   }
 
   @override
-  void dispose() {
-    _engine.leaveChannel(
-        options: const LeaveChannelOptions(
-            stopAllEffect: true,
-            stopAudioMixing: true,
-            stopMicrophoneRecording: true));
-    _engine.release();
+  void dispose()  {
+
+    _engine!.release();
+    _stopTimeCount();
+    eventCenter.removeListener('messageReceived', _messageReceived);
     super.dispose();
   }
 
-  void _sendNotificationToPeer() {
-    SocketRadio.instance.sendMessage({
+  void _sendNotificationCallPeer() {
+   _messageId = SocketRadio.instance.sendMessage({
       'type':
           _isVideo ? MsgType.ChatRTCVideo.index : MsgType.ChatRtcAudio.index,
       'content':
@@ -162,28 +223,77 @@ class _State extends State<VideoCallPage> {
     }, _targetUid, TargetType.Private);
   }
 
+  void _sendNotificationRejectPeer() {
+    SocketRadio.instance.sendMessage({
+      'type': MsgType.ChatRtcHandshakeChange.index,
+      'extraInfo': {
+        'handshakeStatus': 'rejected',
+        'targetMessageId':_messageId,
+      }
+    }, _targetUid, TargetType.Private);
+  }
+
+  void _sendNotificationHangup() {
+    SocketRadio.instance.sendMessage({
+      'type': MsgType.ChatRtcHandshakeChange.index,
+      'extraInfo': {
+        'handshakeStatus': 'finished',
+        'duration': _timer?.tick ?? 0,
+        'targetMessageId':_messageId,
+      }
+    }, _targetUid, TargetType.Private);
+  }
+
+  void _sendNotificationTimeoutToPeer() {
+    SocketRadio.instance.sendMessage({
+      'type': MsgType.ChatRtcHandshakeChange.index,
+      'extraInfo': {
+        'handshakeStatus': 'timeout',
+        'duration': _timer?.tick ?? 0,
+        'targetMessageId':_messageId,
+      }
+    }, _targetUid, TargetType.Private);
+  }
+
+  void _sendNotificationCancelToPeer() {
+    SocketRadio.instance.sendMessage({
+      'type': MsgType.ChatRtcHandshakeChange.index,
+      'extraInfo': {
+        'handshakeStatus': 'cancel',
+        'targetMessageId':_messageId,
+      }
+    }, _targetUid, TargetType.Private);
+  }
+
   // Create UI with local view and remote view
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF313131),
       body: Stack(
         alignment: Alignment.topLeft,
         children: [
-          _remoteVideo(),
-          SizedBox(
-            width: 100,
-            height: 150,
-            child: Center(
-              child: _localUserJoined
-                  ? AgoraVideoView(
-                      controller: VideoViewController(
-                        rtcEngine: _engine,
-                        canvas: const VideoCanvas(uid: 0),
-                      ),
-                    )
-                  : const CircularProgressIndicator(),
+          if (_remoteUid != null && _remoteVideoIsOn) _remoteVideo(),
+          if (_callStatus == CallStatus.Calling &&
+              _cameraEnabled &&
+              _engine != null)
+            _localVideo(),
+          if (!_remoteVideoIsOn) Container(color: const Color(0xFF313131)),
+          if (_cameraEnabled &&
+              _localUserJoined &&
+              _callStatus == CallStatus.Connected)
+            SizedBox(
+              width: 100,
+              height: 150,
+              child: Center(
+                child: AgoraVideoView(
+                  controller: VideoViewController(
+                    rtcEngine: _engine!,
+                    canvas: const VideoCanvas(uid: 0),
+                  ),
+                ),
+              ),
             ),
-          ),
           _buildOptionLayer(),
         ],
       ),
@@ -195,21 +305,45 @@ class _State extends State<VideoCallPage> {
       children: [
         Row(
           children: [
-            IconButton(
-                onPressed: () {},
-                icon: const Icon(LineIcons.smilingFaceWithHeartEyes)),
-            Expanded(
-                child: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(LineIcons.smilingFaceWithHeartEyes))),
-            const SizedBox(width: 100),
+            IconButton(onPressed: () {}, icon: const Icon(Icons.more)),
+            const Spacer(),
+            Text(
+              _timerText ?? '',
+              style: const TextStyle(color: Colors.white),
+            ),
+            const Spacer(),
+            const SizedBox(width: 50),
           ],
         ),
-        if (_callStatus == CallStatus.Connectting) const Text('Connectting...'),
-        if (_callStatus == CallStatus.Connected) const Text('Connected...'),
-        if (_callStatus == CallStatus.Closed) const Text('Huange up...'),
+        const Spacer(),
+        if (_callStatus == CallStatus.Calling)
+          Text(
+            K.getTranslation('calling...'),
+            style: const TextStyle(color: Colors.white),
+          ),
+        if (_callStatus == CallStatus.Connectting)
+          Text(
+            K.getTranslation('connectting...'),
+            style: const TextStyle(color: Colors.white),
+          ),
+        if (_callStatus == CallStatus.Connected)
+          Text(
+            K.getTranslation('connected'),
+            style: const TextStyle(color: Colors.white),
+          ),
+        if (_callStatus == CallStatus.Closed)
+          Text(
+            K.getTranslation('hang up'),
+            style: const TextStyle(color: Colors.white),
+          ),
         _buildIOButtons(),
+        const SizedBox(
+          height: 30,
+        ),
         _buildBottomButtons(),
+        const SizedBox(
+          height: 50,
+        ),
       ],
     );
   }
@@ -219,73 +353,123 @@ class _State extends State<VideoCallPage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         if (!_micphoneEnabled)
-          IconButton(
-              onPressed: () {
-                _engine.muteLocalAudioStream(false);
-                _micphoneEnabled = true;
-                setState(() {});
-              },
-              icon: SvgPicture.asset(
-                'assets/mic_closed.svg',
-                package: 'message',
-              )),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                  onPressed: () {
+                    _engine!.muteLocalAudioStream(true);
+                    _micphoneEnabled = true;
+                    setState(() {});
+                  },
+                  icon: SvgPicture.asset(
+                    'assets/mic_closed.svg',
+                    package: 'message',
+                  )),
+              const Text(
+                '麦克风已关',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ],
+          ),
         if (_micphoneEnabled)
-          IconButton(
-              onPressed: () {
-                _engine.muteLocalAudioStream(true);
-
-                _micphoneEnabled = false;
-                setState(() {});
-              },
-              icon: SvgPicture.asset(
-                'assets/mic_open.svg',
-                package: 'message',
-              )),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                  onPressed: () {
+                    _engine!.muteLocalAudioStream(true);
+                    _micphoneEnabled = false;
+                    setState(() {});
+                  },
+                  icon: Image.asset(
+                    'assets/mic_open.png',
+                    package: 'message',
+                  )),
+              const Text(
+                '麦克风已开',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ],
+          ),
         if (!_cameraEnabled)
-          IconButton(
-              //开启视频
-              onPressed: () async {
-                _engine.enableVideo();
-                _engine.muteLocalVideoStream(false);
-                _cameraEnabled = true;
-                setState(() {});
-              },
-              icon: SvgPicture.asset(
-                'assets/video_closed.svg',
-                package: 'message',
-              )),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                //关闭视频
+                onPressed: () async {
+                  // _engine.disableVideo();
+                  _engine!.muteLocalVideoStream(false);
+                  _cameraEnabled = true;
+                  _engine!.startPreview();
+                  setState(() {});
+                },
+                icon: SvgPicture.asset(
+                  'assets/icon_video_closed.svg',
+                  package: 'message',
+                ),
+              ),
+              const Text(
+                '摄像头已关',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ],
+          ),
         if (_cameraEnabled)
-          IconButton(
-              //关闭视频
-              onPressed: () async {
-                _engine.disableVideo();
-                _engine.muteLocalVideoStream(true);
-                _cameraEnabled = false;
-                setState(() {});
-              },
-              icon: SvgPicture.asset(
-                'assets/video_closed.svg',
-                package: 'message',
-              )),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                //关闭视频
+                onPressed: () async {
+                  // _engine.disableVideo();
+                  _engine!.muteLocalVideoStream(true);
+                  _engine!.stopPreview();
+                  _cameraEnabled = false;
+                  setState(() {});
+                },
+                icon: SvgPicture.asset(
+                  'assets/icon_video_open.svg',
+                  package: 'message',
+                ),
+              ),
+              const Text(
+                '摄像头已开',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ],
+          ),
       ],
     );
   }
 
   Widget _buildBottomButtons() {
-    if (_callStatus == CallStatus.Connected) {
+    if (_callStatus == CallStatus.Connected || isCaller) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           IconButton(
               onPressed: () async {
-                ToastUtil.showTop(msg: '已挂断');
+                if (_callStatus == CallStatus.Connected) {
+                  //挂断
+                  ToastUtil.showTop(msg: '已挂断');
+                  _sendNotificationHangup();
+                } else if (isCaller) {
+                  ToastUtil.showTop(msg: '已取消呼叫');
+                  _sendNotificationCancelToPeer();
+
+                }
+                await _engine!.leaveChannel();
                 await Future.delayed(const Duration(milliseconds: 400));
                 if (!mounted) return;
                 Navigator.pop(context);
+
               },
               icon: SvgPicture.asset(
                 'assets/icon_to_hangup.svg',
                 package: 'message',
+                color: Colors.red,
               )),
         ],
       );
@@ -295,7 +479,9 @@ class _State extends State<VideoCallPage> {
         children: [
           IconButton(
               onPressed: () async {
-                ToastUtil.showTop(msg: '已挂断');
+                ToastUtil.showTop(msg: '已拒绝');
+                _sendNotificationRejectPeer();
+
                 await Future.delayed(const Duration(milliseconds: 400));
                 if (!mounted) return;
                 Navigator.pop(context);
@@ -303,23 +489,23 @@ class _State extends State<VideoCallPage> {
               icon: SvgPicture.asset(
                 'assets/icon_to_hangup.svg',
                 package: 'message',
+                color: Colors.red,
               )),
-          if (Session.uid == _targetUid)
+          if (!isCaller)
             IconButton(
                 onPressed: () async {
                   //接听
-                  if (Session.uid == _targetUid) {
-                    await _engine.joinChannel(
-                      token: _token!,
-                      channelId: _channelId!,
-                      uid: Session.uid,
-                      options: const ChannelMediaOptions(),
-                    );
-                  }
+                  await _engine!.joinChannel(
+                    token: _token!,
+                    channelId: _channelId!,
+                    uid: Session.uid,
+                    options: const ChannelMediaOptions(),
+                  );
                 },
                 icon: SvgPicture.asset(
                   'assets/icon_to_accept_call.svg',
                   package: 'message',
+                  color: Colors.green,
                 )),
         ],
       );
@@ -328,21 +514,38 @@ class _State extends State<VideoCallPage> {
 
   // Display remote user's video
   Widget _remoteVideo() {
-    if (_remoteUid != null) {
-      return AgoraVideoView(
-        controller: VideoViewController.remote(
-          rtcEngine: _engine,
-          canvas: VideoCanvas(uid: _remoteUid),
-          connection: RtcConnection(channelId: _channelId),
-        ),
-      );
-    } else {
-      return Center(
-        child: const Text(
-          'Please wait for remote user to join',
-          textAlign: TextAlign.center,
-        ),
-      );
-    }
+    return AgoraVideoView(
+      controller: VideoViewController.remote(
+        rtcEngine: _engine!,
+        canvas: VideoCanvas(uid: _remoteUid),
+        connection: RtcConnection(channelId: _channelId),
+      ),
+    );
+  }
+
+  Widget _localVideo() {
+    return AgoraVideoView(
+      controller: VideoViewController(
+        rtcEngine: _engine!,
+        canvas: const VideoCanvas(uid: 0),
+      ),
+    );
+  }
+
+  Timer? _timer;
+  String? _timerText;
+
+  void _startTimeCount() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _timerText =
+          '${(timer.tick ~/ 60).toString().padLeft(2, '0')}:${(timer.tick % 60).toString().padLeft(2, '0')}';
+      setState(() {});
+    });
+  }
+
+  void _stopTimeCount() {
+    _timer?.cancel();
+    _timerText = null;
+    // setState(() {});
   }
 }

@@ -44,8 +44,31 @@ class MessageRouter implements IMessageRouter {
                 : socketData.srcUid,
             sessionName: socketData.sessionName,
             sessionId: socketData.sessionId));
-
-        if (socketData.message.type != MsgType.Reply) {
+        //RTC握手状态改变
+        if (socketData.message.type == MsgType.ChatRtcHandshakeChange) {
+          SocketData? primaryData =
+              session.getMessageById(socketData.message.extraInfo['targetMessageId'].toString());
+          if (primaryData != null) {
+            //由于本方法是async，reply消息可能先于原消息到达，此情况将到达回执先缓存起来
+            primaryData!.message.extraInfo['handshakeStatus'] = socketData!.message.extraInfo['handshakeStatus'];
+            // List<SocketData> sockets = await session.messages;
+            int res = await DatabaseHelper.instance.updateMessage(primaryData);
+            dog.d('res:$res');
+            eventCenter.emit('messageReceived',socketData);
+          }
+        } else if (socketData.message.type == MsgType.Recipt) {
+          // dog.d('socketData ->reply:${socketData}');
+          SocketData? primaryData =
+              session.getMessageById(socketData.messageId.toString());
+          if (primaryData != null) {
+            primaryData!.status = Status.reached;
+            // List<SocketData> sockets = await session.messages;
+            int res = await DatabaseHelper.instance
+                .updateMessage(primaryData, {'status': Status.reached.index});
+            dog.d('res:$res');
+            eventCenter.emit('messageReceived',socketData);
+          }
+        } else {
           session.sessionName = socketData.sessionName;
           session.peerGender = socketData.peerGender;
           await session.insertMessage(socketData);
@@ -57,23 +80,10 @@ class MessageRouter implements IMessageRouter {
                 Constant.context,
                 socketData.message.type == MsgType.ChatRTCVideo,
                 socketData.srcUid,
-                token: socketData.message.extraInfo['token'],
+                socketData.messageId,
                 channelId: socketData.message.extraInfo['channelId'],
               );
             }
-          }
-        } else {
-          dog.d('socketData ->reply:${socketData}');
-          SocketData? primaryData =
-              session.getMessageById(socketData.messageId);
-          if (primaryData != null) {
-            //由于本方法是async，reply消息可能先于原消息到达，此情况将到达回执先缓存起来
-            primaryData!.status = Status.reached;
-            // List<SocketData> sockets = await session.messages;
-            int res = await DatabaseHelper.instance
-                .updateMessage(primaryData, {'status': Status.reached.index});
-            dog.d('res:$res');
-            eventCenter.emit('messageReceived');
           }
         }
       }

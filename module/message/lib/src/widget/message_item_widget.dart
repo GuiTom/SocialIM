@@ -11,6 +11,8 @@ import 'chat_audio.dart';
 import 'chat_bubble.dart';
 import '../locale/k.dart';
 import 'package:base/src/locale/k.dart' as BaseK;
+
+import 'chat_rtc_bubble.dart';
 enum MenuId {
   resend,
   delete,
@@ -134,7 +136,7 @@ class _State extends State<ChatMessageItem> {
     }else if (widget.data.message.type == MsgType.ChatRtcAudio) {
       child = ChatBubble(isLeft: isLeft, text: widget.data.message.content);
     }else if (widget.data.message.type == MsgType.ChatRTCVideo) {
-      child = ChatBubble(isLeft: isLeft, text: widget.data.message.content);
+      child = ChatRtcBubble(isLeft: isLeft, message: widget.data.message);
     } else {
       child = const SizedBox(
         width: 200,
