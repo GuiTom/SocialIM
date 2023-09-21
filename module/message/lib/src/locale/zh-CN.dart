@@ -20,6 +20,17 @@ class ZhCn {
     "calling...":"正在呼叫",
     "connected":"已连接",
     "connectting...":"正在连接",
-    "hang up":"挂断",
+    "hang_up":"挂断",
+    "already_hang_up":"已挂断",
+    "micphone_closed":"麦克风已关",
+    "micphone_open":"麦克风已开",
+    "camera_open":"摄像头已开",
+    "camera_closed":"摄像头已关",
+    "call_canceled":"已取消呼叫",
+    "rejected":"已拒绝",
+    "the_peer_rejected":"对方已拒绝",
+    "session_ended":"通话已结束",
+    "canceled":"已取消",
+    "no_answer":"未接听",
   };
 }

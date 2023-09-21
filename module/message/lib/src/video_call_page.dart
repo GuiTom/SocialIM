@@ -80,17 +80,17 @@ class _State extends State<VideoCallPage> {
       if (!mounted) return;
       if (_data.message.extraInfo['handshakeStatus'] == 'rejected') {
         if (_data.targetId == Session.uid) {
-          ToastUtil.showCenter(msg: '对方已拒绝');
+          ToastUtil.showCenter(msg: K.getTranslation('the_peer_rejected'));
         } else {
-          ToastUtil.showCenter(msg: '已拒绝');
+          ToastUtil.showCenter(msg: K.getTranslation('rejected'));
           return;
         }
       } else if (_data.message.extraInfo['handshakeStatus'] == 'canceled') {
-        ToastUtil.showCenter(msg: '已取消');
+        ToastUtil.showCenter(msg: K.getTranslation('canceled'));
       } else if (_data.message.extraInfo['handshakeStatus'] == 'timeout') {
-        ToastUtil.showCenter(msg: '未接听');
+        ToastUtil.showCenter(msg: K.getTranslation('no_answer'));
       } else if (_data.message.extraInfo['handshakeStatus'] == 'finished') {
-        ToastUtil.showCenter(msg: '通话已结束');
+        ToastUtil.showCenter(msg: K.getTranslation('session_ended'));
       }
       await _engine!.leaveChannel();
       if(!mounted) return;
@@ -333,7 +333,7 @@ class _State extends State<VideoCallPage> {
           ),
         if (_callStatus == CallStatus.Closed)
           Text(
-            K.getTranslation('hang up'),
+            K.getTranslation('hang_up'),
             style: const TextStyle(color: Colors.white),
           ),
         _buildIOButtons(),
@@ -366,8 +366,8 @@ class _State extends State<VideoCallPage> {
                     'assets/mic_closed.svg',
                     package: 'message',
                   )),
-              const Text(
-                '麦克风已关',
+               Text(
+                K.getTranslation('micphone_closed'),
                 style: TextStyle(color: Colors.white, fontSize: 12),
               ),
             ],
@@ -386,9 +386,9 @@ class _State extends State<VideoCallPage> {
                     'assets/mic_open.png',
                     package: 'message',
                   )),
-              const Text(
-                '麦克风已开',
-                style: TextStyle(color: Colors.white, fontSize: 12),
+               Text(
+                K.getTranslation('micphone_open'),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
             ],
           ),
@@ -410,9 +410,9 @@ class _State extends State<VideoCallPage> {
                   package: 'message',
                 ),
               ),
-              const Text(
-                '摄像头已关',
-                style: TextStyle(color: Colors.white, fontSize: 12),
+              Text(
+                K.getTranslation('camera_open'),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
             ],
           ),
@@ -423,7 +423,6 @@ class _State extends State<VideoCallPage> {
               IconButton(
                 //关闭视频
                 onPressed: () async {
-                  // _engine.disableVideo();
                   _engine!.muteLocalVideoStream(true);
                   _engine!.stopPreview();
                   _cameraEnabled = false;
@@ -434,8 +433,8 @@ class _State extends State<VideoCallPage> {
                   package: 'message',
                 ),
               ),
-              const Text(
-                '摄像头已开',
+               Text(
+                K.getTranslation('camera_open'),
                 style: TextStyle(color: Colors.white, fontSize: 12),
               ),
             ],
@@ -453,10 +452,10 @@ class _State extends State<VideoCallPage> {
               onPressed: () async {
                 if (_callStatus == CallStatus.Connected) {
                   //挂断
-                  ToastUtil.showTop(msg: '已挂断');
+                  ToastUtil.showTop(msg: K.getTranslation('already_hang_up'));
                   _sendNotificationHangup();
                 } else if (isCaller) {
-                  ToastUtil.showTop(msg: '已取消呼叫');
+                  ToastUtil.showTop(msg: K.getTranslation('canceled'));
                   _sendNotificationCancelToPeer();
 
                 }
@@ -479,7 +478,7 @@ class _State extends State<VideoCallPage> {
         children: [
           IconButton(
               onPressed: () async {
-                ToastUtil.showTop(msg: '已拒绝');
+                ToastUtil.showTop(msg: K.getTranslation('rejected'));
                 _sendNotificationRejectPeer();
 
                 await Future.delayed(const Duration(milliseconds: 400));
