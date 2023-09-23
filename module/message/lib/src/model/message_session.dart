@@ -135,7 +135,7 @@ class MessageSession {
     lastData = data;
     msgCount += 1;
     if (!data.sendBySelf &&
-        !(isAtChatPage && data.message.type == MsgType.ChatText)) {
+        !(isAtChatPage && data.contentType == MsgContentType.ChatText)) {
       unReadCount += 1;
       Constant.totalUnReadMsgCount += 1;
     }

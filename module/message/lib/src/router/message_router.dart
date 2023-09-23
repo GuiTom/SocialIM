@@ -45,18 +45,21 @@ class MessageRouter implements IMessageRouter {
             sessionName: socketData.sessionName,
             sessionId: socketData.sessionId));
         //RTC握手状态改变
-        if (socketData.message.type == MsgType.ChatRtcHandshakeChange) {
+        if (socketData.contentType == MsgContentType.ChatRtcHandshakeChange) {
           SocketData? primaryData =
               session.getMessageById(socketData.message.extraInfo['targetMessageId'].toString());
           if (primaryData != null) {
             //由于本方法是async，reply消息可能先于原消息到达，此情况将到达回执先缓存起来
             primaryData!.message.extraInfo['handshakeStatus'] = socketData!.message.extraInfo['handshakeStatus'];
+            if(socketData!.message.extraInfo['duration']!=null){
+              primaryData!.message.extraInfo['duration'] = socketData!.message.extraInfo['duration'];
+            }
             // List<SocketData> sockets = await session.messages;
             int res = await DatabaseHelper.instance.updateMessage(primaryData);
             dog.d('res:$res');
             eventCenter.emit('messageReceived',socketData);
           }
-        } else if (socketData.message.type == MsgType.Recipt) {
+        } else if (socketData.contentType == MsgContentType.Recipt) {
           // dog.d('socketData ->reply:${socketData}');
           SocketData? primaryData =
               session.getMessageById(socketData.messageId.toString());
@@ -69,16 +72,18 @@ class MessageRouter implements IMessageRouter {
             eventCenter.emit('messageReceived',socketData);
           }
         } else {
-          session.sessionName = socketData.sessionName;
-          session.peerGender = socketData.peerGender;
+          if (socketData.targetId == Session.uid) {
+            session.sessionName = socketData.sessionName;
+            session.peerGender = socketData.peerGender;
+          }
           await session.insertMessage(socketData);
           dog.d('socketData ->send:${socketData}');
-          if (socketData.message.type == MsgType.ChatRTCVideo ||
-              socketData.message.type == MsgType.ChatRtcAudio) {
-            if (socketData.targetId == Session.uid) {
+          if (socketData.contentType == MsgContentType.ChatRTCVideo ||
+              socketData.contentType == MsgContentType.ChatRtcAudio) {
+            if (socketData.targetId == Session.uid&&socketData.message.extraInfo['handshakeStatus']==null) {
               VideoCallPage.show(
                 Constant.context,
-                socketData.message.type == MsgType.ChatRTCVideo,
+                socketData.contentType == MsgContentType.ChatRTCVideo,
                 socketData.srcUid,
                 socketData.messageId,
                 channelId: socketData.message.extraInfo['channelId'],

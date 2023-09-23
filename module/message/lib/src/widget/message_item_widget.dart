@@ -95,9 +95,9 @@ class _State extends State<ChatMessageItem> {
   Widget build(BuildContext context) {
     late Widget child;
     bool isLeft = Session.uid != widget.data.srcUid;
-    if (widget.data.message.type == MsgType.ChatText) {
+    if (widget.data.contentType == MsgContentType.ChatText) {
       child = ChatBubble(isLeft: isLeft, text: widget.data.message.content);
-    } else if (widget.data.message.type == MsgType.ChatImage) {
+    } else if (widget.data.contentType == MsgContentType.ChatImage) {
       String imageUrl =
           System.file('/file/${widget.data.message.extraInfo['filePath']}');
       int cachedWidth =
@@ -127,16 +127,16 @@ class _State extends State<ChatMessageItem> {
                   radius: imageWidth * 0.5, color: Colors.white),
         ),
       );
-    } else if (widget.data.message.type == MsgType.ChatAudio) {
+    } else if (widget.data.contentType == MsgContentType.ChatAudio) {
       child = ChatAudio(
         isLeft: isLeft,
         isPlaying: widget.playingIndex == widget.listIndex,
         durationInMillseconds: widget.data.message.extraInfo['duration'],
       );
-    }else if (widget.data.message.type == MsgType.ChatRtcAudio) {
+    }else if (widget.data.contentType == MsgContentType.ChatRtcAudio) {
       child = ChatBubble(isLeft: isLeft, text: widget.data.message.content);
-    }else if (widget.data.message.type == MsgType.ChatRTCVideo) {
-      child = ChatRtcBubble(isLeft: isLeft, message: widget.data.message);
+    }else if (widget.data.contentType == MsgContentType.ChatRTCVideo) {
+      child = ChatRtcBubble(isLeft: isLeft, data: widget.data);
     } else {
       child = const SizedBox(
         width: 200,
@@ -146,7 +146,7 @@ class _State extends State<ChatMessageItem> {
 
     child = GestureDetector(
       onTap: () {
-        if (widget.data.message.type == MsgType.ChatAudio) {
+        if (widget.data.contentType == MsgContentType.ChatAudio) {
           _handelTapAudio();
         }
         widget.onTap?.call();
@@ -160,8 +160,8 @@ class _State extends State<ChatMessageItem> {
       controller: _popUpMenuController,
       child: child,
     );
-    if (widget.data.message.type == MsgType.ChatText ||
-        widget.data.message.type == MsgType.ChatAudio) {
+    if (widget.data.contentType == MsgContentType.ChatText ||
+        widget.data.contentType == MsgContentType.ChatAudio) {
       child = Flexible(child: child);
     }
     List<Widget> children = [
@@ -178,7 +178,7 @@ class _State extends State<ChatMessageItem> {
       const SizedBox(
         width: 6,
       ),
-      if (widget.data.message.type == MsgType.ChatAudio &&
+      if (widget.data.contentType == MsgContentType.ChatAudio &&
           !widget.data.read &&
           !widget.data.sendBySelf)
         Padding(

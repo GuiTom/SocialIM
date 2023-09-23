@@ -33,6 +33,7 @@ enum SessionField {
   peerGender,
   targetId,
   targetType,
+  contentType,
   msgCount,
   unReadCount,
   lastData,
@@ -42,7 +43,7 @@ class DatabaseHelper {
 
   static const _dbVersion = 1;
   String get dbName{
-  return '${Session.uid}_my14.db';
+  return '${Session.uid}_my15.db';
   }
   // Making it a Singleton class.
   DatabaseHelper._privateConstructor();
@@ -97,6 +98,7 @@ class DatabaseHelper {
             ${SessionField.sessionName.name} TEXT NOT NULL,
              ${SessionField.peerGender.name} INTEGER,
             ${SessionField.targetType.name} INTEGER,
+            ${SessionField.contentType.name} INTEGER,
             ${SessionField.targetId.name} INTEGER,
             ${SessionField.msgCount.name} INTEGER,
              ${SessionField.unReadCount.name} INTEGER,

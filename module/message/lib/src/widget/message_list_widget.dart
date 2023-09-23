@@ -78,15 +78,15 @@ class _State extends State<MessageListWidget> {
                 setState(() {});
               },
               onTap: () {
-                if (widget.messages[index].message.type == MsgType.ChatImage) {
+                if (widget.messages[index].contentType == MsgContentType.ChatImage) {
                   _onTapedImageItem(index);
                   if(widget.messages[index].srcUid!=Session.uid) {
                     widget.messgageSession.setMessageReadStatus(
                         [widget.messages[index]]);
                   }
                   setState(() {});
-                } else if (widget.messages[index].message.type ==
-                    MsgType.ChatAudio) {
+                } else if (widget.messages[index].contentType ==
+                    MsgContentType.ChatAudio) {
                   _onTapedAudioItem(index);
                   if(widget.messages[index].srcUid!=Session.uid) {
                     widget.messgageSession.setMessageReadStatus(
@@ -107,7 +107,7 @@ class _State extends State<MessageListWidget> {
   _onTapedImageItem(int index) {
     int initIndex = 0;
     List<String> imageUrls = widget.messages
-        .where((element) => element.message.type == MsgType.ChatImage)
+        .where((element) => element.contentType == MsgContentType.ChatImage)
         .mapIndexed((idx, e) {
       if (widget.messages[index].message.extraInfo['filePath'] ==
           e.message.extraInfo['filePath']) {

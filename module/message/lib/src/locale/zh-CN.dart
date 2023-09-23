@@ -26,11 +26,14 @@ class ZhCn {
     "micphone_open":"麦克风已开",
     "camera_open":"摄像头已开",
     "camera_closed":"摄像头已关",
-    "call_canceled":"已取消呼叫",
     "rejected":"已拒绝",
     "the_peer_rejected":"对方已拒绝",
+    "the_peer_canceled":"对方已取消",
+    "the_peer_no_answer":"对方未接听",
     "session_ended":"通话已结束",
     "canceled":"已取消",
     "no_answer":"未接听",
+
+    "session_duration":"通话时长",
   };
 }

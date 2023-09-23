@@ -2,11 +2,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:base/base.dart';
 
+import '../locale/k.dart';
+
 class ChatRtcBubble extends StatefulWidget {
   final bool isLeft;
-  final SocketMessage message;
+  final SocketData data;
 
-  const ChatRtcBubble({Key? key, required this.isLeft, required this.message})
+  const ChatRtcBubble({Key? key, required this.isLeft, required this.data})
       : super(key: key);
 
   @override
@@ -50,7 +52,7 @@ class _State extends State<ChatRtcBubble> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SvgPicture.asset(
-                    widget.message.type == MsgType.ChatRTCVideo
+                    widget.data.contentType == MsgContentType.ChatRTCVideo
                         ? 'assets/icon_call_video.svg'
                         : 'assets/icon_call_voice.svg',
                     package: 'message',
@@ -72,18 +74,31 @@ class _State extends State<ChatRtcBubble> {
 
   Widget _buildContent() {
     String? content;
-    if (widget.message.extraInfo['handshakeStatus'] == 'rejected') {
-      content = '已拒绝';
-    } else if (widget.message.extraInfo['handshakeStatus'] == 'canceled') {
-      content = '对方已取消';
-    } else if (widget.message.extraInfo['handshakeStatus'] == 'timeout') {
-      content = '未应答';
-    } else if (widget.message.extraInfo['handshakeStatus'] == 'finished') {
-      int duration = widget.message.extraInfo['duration'] ?? 0;
-      content =
-          '通话时长 ${(duration ~/ 60).toString().padLeft(2, '0')}:${(duration % 60).toString().padLeft(2, '0')}';
+    if (widget.data.message.extraInfo['handshakeStatus'] == HandShakeStatus.rejected.name) {
+      if(widget.data.targetId==Session.uid) {
+        content = K.getTranslation('rejected');
+      }else {
+        content = K.getTranslation('the_peer_rejected');
+      }
+    } else if (widget.data.message.extraInfo['handshakeStatus'] == HandShakeStatus.canceled.name) {
+      if(widget.data.targetId==Session.uid) {
+        content = K.getTranslation('the_peer_canceled');
+      }else {
+        content = K.getTranslation('canceled');
+      }
+    } else if (widget.data.message.extraInfo['handshakeStatus'] == HandShakeStatus.timeout.name) {
+      if(widget.data.targetId==Session.uid) {
+        content = K.getTranslation('no_answer');
+      }else {
+        content = K.getTranslation('the_peer_no_answer');
+      }
+    } else if (widget.data.message.extraInfo['handshakeStatus'] == HandShakeStatus.finished.name) {
+      int duration = widget.data.message.extraInfo['duration'] ?? 0;
+      content = K.getTranslation('session_duration', args: [
+        '${(duration ~/ 60).toString().padLeft(2, '0')}:${(duration % 60).toString().padLeft(2, '0')}'
+      ]);
     } else {
-      content = widget.message.content;
+      content = widget.data.message.content;
     }
     return Text(content);
   }

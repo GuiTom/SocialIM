@@ -6,6 +6,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 import 'locale/k.dart';
+import 'locale/rtc_api.dart';
 import 'message_api.dart';
 
 class VideoCallPage extends StatefulWidget {
@@ -25,6 +26,7 @@ class VideoCallPage extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
+
     return _State();
   }
 
@@ -76,7 +78,7 @@ class _State extends State<VideoCallPage> {
 
   void _messageReceived(String type, Object data) async {
     SocketData _data = data as SocketData;
-    if (_data.message.type == MsgType.ChatRtcHandshakeChange) {
+    if (_data.contentType == MsgContentType.ChatRtcHandshakeChange) {
       if (!mounted) return;
       if (_data.message.extraInfo['handshakeStatus'] == 'rejected') {
         if (_data.targetId == Session.uid) {
@@ -122,7 +124,7 @@ class _State extends State<VideoCallPage> {
 
     _engine!.registerEventHandler(
       RtcEngineEventHandler(
-          onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
+          onJoinChannelSuccess: (RtcConnection connection, int elapsed) async{
         debugPrint("local user ${connection.localUid} joined");
         setState(() {
           _localUserJoined = true;
@@ -132,9 +134,9 @@ class _State extends State<VideoCallPage> {
           }
         });
         if (widget.channelId == null) {
-          _sendNotificationCallPeer();
+          _messageId = await RtcApi.sendNotificationCallPeer(_targetUid,_isVideo,_token??'',_channelId!);
         }
-      }, onRejoinChannelSuccess: (RtcConnection connection, int elapsed) {
+      }, onRejoinChannelSuccess: (RtcConnection connection, int elapsed) async{
         debugPrint("local user ${connection.localUid} joined");
         setState(() {
           _localUserJoined = true;
@@ -144,7 +146,7 @@ class _State extends State<VideoCallPage> {
           }
         });
         if (widget.channelId == null) {
-          _sendNotificationCallPeer();
+         _messageId = await RtcApi.sendNotificationCallPeer(_targetUid,_isVideo,_token??'',_channelId!);
         }
       }, onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
         debugPrint("remote user $remoteUid joined");
@@ -201,68 +203,10 @@ class _State extends State<VideoCallPage> {
 
   @override
   void dispose()  {
-
     _engine!.release();
     _stopTimeCount();
     eventCenter.removeListener('messageReceived', _messageReceived);
     super.dispose();
-  }
-
-  void _sendNotificationCallPeer() {
-   _messageId = SocketRadio.instance.sendMessage({
-      'type':
-          _isVideo ? MsgType.ChatRTCVideo.index : MsgType.ChatRtcAudio.index,
-      'content':
-          '[${K.getTranslation(_isVideo ? 'video_call' : 'audio_call')}]',
-      'extraInfo': {
-        'senderName': Session.userInfo.name,
-        'senderGender': Session.userInfo.sex,
-        'token': _token,
-        'channelId': _channelId,
-      }
-    }, _targetUid, TargetType.Private);
-  }
-
-  void _sendNotificationRejectPeer() {
-    SocketRadio.instance.sendMessage({
-      'type': MsgType.ChatRtcHandshakeChange.index,
-      'extraInfo': {
-        'handshakeStatus': 'rejected',
-        'targetMessageId':_messageId,
-      }
-    }, _targetUid, TargetType.Private);
-  }
-
-  void _sendNotificationHangup() {
-    SocketRadio.instance.sendMessage({
-      'type': MsgType.ChatRtcHandshakeChange.index,
-      'extraInfo': {
-        'handshakeStatus': 'finished',
-        'duration': _timer?.tick ?? 0,
-        'targetMessageId':_messageId,
-      }
-    }, _targetUid, TargetType.Private);
-  }
-
-  void _sendNotificationTimeoutToPeer() {
-    SocketRadio.instance.sendMessage({
-      'type': MsgType.ChatRtcHandshakeChange.index,
-      'extraInfo': {
-        'handshakeStatus': 'timeout',
-        'duration': _timer?.tick ?? 0,
-        'targetMessageId':_messageId,
-      }
-    }, _targetUid, TargetType.Private);
-  }
-
-  void _sendNotificationCancelToPeer() {
-    SocketRadio.instance.sendMessage({
-      'type': MsgType.ChatRtcHandshakeChange.index,
-      'extraInfo': {
-        'handshakeStatus': 'cancel',
-        'targetMessageId':_messageId,
-      }
-    }, _targetUid, TargetType.Private);
   }
 
   // Create UI with local view and remote view
@@ -453,10 +397,10 @@ class _State extends State<VideoCallPage> {
                 if (_callStatus == CallStatus.Connected) {
                   //挂断
                   ToastUtil.showTop(msg: K.getTranslation('already_hang_up'));
-                  _sendNotificationHangup();
+                  RtcApi.sendNotificationHangup(_targetUid,_timer?.tick??0,_messageId);
                 } else if (isCaller) {
                   ToastUtil.showTop(msg: K.getTranslation('canceled'));
-                  _sendNotificationCancelToPeer();
+                  RtcApi.sendNotificationCancelToPeer(_targetUid,_messageId);
 
                 }
                 await _engine!.leaveChannel();
@@ -479,7 +423,7 @@ class _State extends State<VideoCallPage> {
           IconButton(
               onPressed: () async {
                 ToastUtil.showTop(msg: K.getTranslation('rejected'));
-                _sendNotificationRejectPeer();
+                RtcApi.sendNotificationRejectPeer(_targetUid,_messageId);
 
                 await Future.delayed(const Duration(milliseconds: 400));
                 if (!mounted) return;
@@ -538,6 +482,12 @@ class _State extends State<VideoCallPage> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _timerText =
           '${(timer.tick ~/ 60).toString().padLeft(2, '0')}:${(timer.tick % 60).toString().padLeft(2, '0')}';
+      if(timer.tick>=60){//挂断
+        if(!mounted) return;
+        RtcApi.sendNotificationTimeoutToPeer(_targetUid,timer.tick, _messageId);
+        Navigator.pop(context);
+        return;
+      }
       setState(() {});
     });
   }

@@ -99,11 +99,11 @@ class _State extends State<LiveRoomPage> {
   void _onReceivedMessage(String type, Object data) {
     SocketData _data = data as SocketData;
     if (_data.targetType == TargetType.LiveRoom &&
-        (_data.message.type == MsgType.ChatText ||
-            _data.message.type == MsgType.MemberEnterExit)) {
+        (_data.contentType == MsgContentType.ChatText ||
+            _data.contentType == MsgContentType.MemberEnterExit)) {
       _messageListStateKey.currentState?.pushMessage(_data);
     }
-    if (_data.message.type == MsgType.MemberEnterExit) {
+    if (_data.contentType == MsgContentType.MemberEnterExit) {
       String action = _data.message.extraInfo['action'];
       int uid = TypeUtil.parseInt(_data.message.extraInfo['uid']);
       if (action == 'join') {
@@ -120,7 +120,7 @@ class _State extends State<LiveRoomPage> {
       }
       setState(() {});
     }
-    if (_data.message.type == MsgType.MemberStatusChange) {
+    if (_data.contentType == MsgContentType.MemberStatusChange) {
       String action = _data.message.extraInfo['action'];
       int uid = TypeUtil.parseInt(_data.message.extraInfo['uid']);
       if (action == 'upMic' || action == 'downMic') {

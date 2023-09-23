@@ -105,8 +105,8 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
     _messages = await _messgaeSession!.messages;
     _messgaeSession!.setMessageReadStatus(_messages!
         .where((element) =>
-            (element.message.type == MsgType.ChatText ||
-                element.message.type == MsgType.ChatImage) &&
+            (element.contentType == MsgContentType.ChatText ||
+                element.contentType == MsgContentType.ChatImage) &&
             !element.sendBySelf &&
             !element.read)
         .toList());
@@ -258,7 +258,6 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
               pbMsg: UploadResp.create());
           if (resp.code == 1) {
             SocketRadio.instance.sendMessage({
-              'type': MsgType.ChatAudio.index,
               'content': '[${K.getTranslation('voice')}]',
               'extraInfo': {
                 'senderName': Session.userInfo.name,
@@ -267,7 +266,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
                 'filePath': resp.filePath,
                 'duration': recordDetail['duration'],
               }
-            }, widget.targetId, TargetType.Private);
+            }, widget.targetId, TargetType.Private,MsgContentType.ChatAudio);
           } else {
             ToastUtil.showCenter(msg: resp.message);
           }
@@ -304,14 +303,13 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
       FocusScope.of(context).requestFocus(_focusNode);
     }
     SocketRadio.instance.sendMessage({
-      'type': MsgType.ChatText.index,
       'content': keyword,
       'extraInfo': {
         'senderName': Session.userInfo.name,
         'senderGender': Session.userInfo.sex,
         'receiverName': widget.targetName
       }
-    }, widget.targetId, TargetType.Private);
+    }, widget.targetId, TargetType.Private,MsgContentType.ChatText);
     _textController.clear();
     _showEmojiPanel = false;
     setState(() {});
@@ -450,7 +448,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
         pbMsg: UploadResp.create());
     if (resp.code == 1) {
       SocketRadio.instance.sendMessage({
-        'type': MsgType.ChatImage.index,
+
         'content': '[${K.getTranslation('picture')}]',
         'extraInfo': {
           'senderName': Session.userInfo.name,
@@ -460,7 +458,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
           'imageWidth': imageWidth,
           'imageHeight': imageHeight,
         }
-      }, widget.targetId, TargetType.Private);
+      }, widget.targetId, TargetType.Private,MsgContentType.ChatImage);
     } else {
       ToastUtil.showCenter(msg: resp.message);
     }

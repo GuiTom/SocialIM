@@ -26,10 +26,6 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-    <key>UIPrerenderedIcon</key>
-    <false/>
-    <key>UIApplicationShortcutWidget</key>
-    <false/>
 	<key>NSCameraUsageDescription</key>
 	<string>Need to take photos or videos when you edit you profile.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
@@ -40,6 +36,8 @@
 	<string>We need to access your microphone to record send your voice to other user who you want to commulicate</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Access to your photo library is required to share photos and save</string>
+	<key>UIApplicationShortcutWidget</key>
+	<false/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
@@ -50,6 +48,8 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIPrerenderedIcon</key>
+	<false/>
 	<key>UIStatusBarHidden</key>
 	<false/>
 	<key>UISupportedInterfaceOrientations</key>

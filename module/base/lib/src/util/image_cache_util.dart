@@ -12,7 +12,6 @@ class ImageCacheUtil{
    await DefaultCacheManager()
         .removeFile(imageUrl);
    //2.移除内存缓存(到Framework源码里面去看的)
-
       CachedNetworkImageProvider provider = CachedNetworkImageProvider(imageUrl);
       // ResizeImageKey
       for (var s in sizes) {
@@ -28,7 +27,6 @@ class ImageCacheUtil{
         final key = await ResizeImage.resizeIfNeeded(size.width.toInt(), size.height.toInt(), provider).obtainKey(configuration);
         PaintingBinding.instance.imageCache.evict(key,includeLive: true);
       }
-
   }
 
 

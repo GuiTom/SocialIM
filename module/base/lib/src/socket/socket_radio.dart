@@ -92,18 +92,18 @@ class SocketRadio {
 
   Timer? _timer;
   //targetType 1,普通用户,2。群组，房间等
-  sendMessage(Map message, int targetId, TargetType targetType) async{
+ Future<int> sendMessage(Map message, int targetId, TargetType targetType,MsgContentType contentType) async{
     DateTime now = DateTime.now();
     int timestamp = now.millisecondsSinceEpoch;
     String messageStr = TypeUtil.parseString(message);
     var body = Uint8List.fromList(utf8.encode(messageStr));
-
     var head = ByteData(25);
     int length = 25 + body.length;
     head.setUint32(0, length);
     head.setInt32(4, Session.uid);
     head.setInt32(8, targetId);
-    head.setInt8(12, targetType.index);
+    int types = (targetType.index<<4)&contentType.index;
+    head.setInt8(12, types);
     head.setInt64(13, timestamp);
     int messageId = Random().nextInt(pow(2, 32).toInt());
     head.setUint32(21, messageId);
@@ -129,7 +129,8 @@ class SocketRadio {
     head.setUint32(0, length);
     head.setInt32(4, socketData.srcUid);
     head.setInt32(8, socketData.targetId);
-    head.setInt8(12, socketData.targetType.index);
+    int types = (socketData.targetType.index<<4)&socketData.contentType.index;
+    head.setInt8(12, types);
     head.setInt64(13, socketData.createAt);
     head.setUint32(21, socketData.messageId);
     var data = head.buffer.asUint8List(0, head.lengthInBytes).cast<int>() +

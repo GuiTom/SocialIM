@@ -26,11 +26,13 @@ class En {
     "micphone_open":"micphone is opend",
     "camera_open":"camera is open",
     "camera_closed":"camera closed",
-    "call_canceled":"session_canceled",
     "rejected":"rejected",
+    "the_peer_canceled":"the peer canceled",
     "the_peer_rejected":"the peer rejected",
+    "the_peer_no_answer":"the peer no answer",
     "session_ended":"session ended",
     "canceled":"cancled",
     "no_answer":"no answer",
+    "session_duration":"session duration",
   };
 }

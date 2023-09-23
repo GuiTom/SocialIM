@@ -6,13 +6,13 @@ import '../../base.dart';
 import '../util/type_util.dart';
 
 enum TargetType {
-  Reply,
+  None,
   Private, //一对一私聊
   LiveRoom, //房间
   Group, //群组
 }
 
-enum MsgType {
+enum MsgContentType {
   Recipt,
   ChatText,
   ChatAudio,
@@ -28,39 +28,41 @@ enum Status {
   sending, //正在发送
   reached, //已到达服务器或对方手机
   timeOut, //超时未送达
-  readByOther //对方已阅读
 }
-
+enum HandShakeStatus{
+  rejected,
+  canceled,
+  timeout,
+  finished
+}
 class SocketMessage {
   SocketMessage(
-      {required this.content, required this.type, required this.extraInfo});
+      {required this.content, required this.extraInfo});
 
-  final MsgType type;
+ 
   final String content;
   Map<String, dynamic> extraInfo;
 
   factory SocketMessage.fromMap(Map<String, dynamic> map) {
     return SocketMessage(
         content: map['content'] ?? '',
-        type: MsgType.values[map['type'] ?? 0],
         extraInfo: TypeUtil.parseMap(map["extraInfo"]));
   }
 
   Map<String, dynamic> toMMap() {
     return {
       'content': content,
-      'type': type.index,
       'extraInfo': TypeUtil.parseString(extraInfo)
     };
   }
 
   Map<String, dynamic> toRawMap() {
-    return {'content': content, 'type': type.index, 'extraInfo': extraInfo};
+    return {'content': content, 'extraInfo': extraInfo};
   }
 
   @override
   String toString() {
-    return 'SocketMessage{type: $type, content: $content, extraInfo: $extraInfo}';
+    return 'SocketMessage{ content: $content, extraInfo: $extraInfo}';
   }
 }
 
@@ -70,11 +72,12 @@ class SocketData {
       required this.srcUid,
       required this.targetId,
       required this.targetType,
+        required this.contentType,
       required this.message,
       required this.status,
       required this.read,
       required this.createAt});
-
+  final MsgContentType contentType;
   bool read = false; //是否已经被自己阅读
   Status status = Status.sending; //0,正在发送 1.已送达 2.已超时 3.对方已读
   final int srcUid;
@@ -86,7 +89,7 @@ class SocketData {
 
   @override
   String toString() {
-    return 'SocketData{ msid:$messageId, srcUid: $srcUid, targetId: $targetId, targetType: $targetType, createAt: ${DateTime.fromMillisecondsSinceEpoch(createAt)}, message: $message, type:$targetType,status:$status read:$read, sendBySelf:$sendBySelf}';
+    return 'SocketData{ msid:$messageId, srcUid: $srcUid, targetId: $targetId, targetType: $targetType, createAt: ${DateTime.fromMillisecondsSinceEpoch(createAt)}, message: $message, type:$targetType,contentType:$contentType,status:$status read:$read, sendBySelf:$sendBySelf}';
   }
 
   String get sessionName {
@@ -135,6 +138,7 @@ class SocketData {
       'targetId': targetId,
       'targetType': targetType.index,
       'createAt': createAt,
+      'contentType': contentType.index,
       'message': TypeUtil.parseString(message.toMMap()),
       'read': read ? 1 : 0,
       'status': status.index,
@@ -142,15 +146,13 @@ class SocketData {
   }
 
   factory SocketData.fromMap(Map<String, dynamic> map) {
-    // if(map['messageId'] is String){
-    //   dog.d('${map['messageId']}');
-    // }
     return SocketData._(
         messageId: map['messageId'],
         srcUid: map['srcUid'] ?? 0,
         targetId: map['targetId'] ?? 0,
         targetType: TargetType.values[map['targetType'] ?? 0],
         createAt: map['createAt'] ?? 0,
+        contentType: map['contentType'] ?? 0,
         read: map['read'] == 1 ? true : false,
         status: Status.values[map['status'] ?? 0],
         message: SocketMessage.fromMap(TypeUtil.parseMap(map["message"])));
@@ -162,7 +164,9 @@ class SocketData {
     int length = byteData.getUint32(0);
     int srcUid = byteData.getInt32(4);
     int targetId = byteData.getInt32(8);
-    int targetType = byteData.getInt8(12);
+    int types = byteData.getInt8(12);
+    int targetType = types>>4;
+    int contentType = types&0x0F;
     int timeStamp = byteData.getInt64(13);
     int messageId = byteData.getUint32(21);
     String message = length > 25 ? utf8.decode(bytes.sublist(25, length)) : '';
@@ -172,6 +176,7 @@ class SocketData {
         srcUid: srcUid,
         targetId: targetId,
         targetType: TargetType.values[targetType],
+        contentType: MsgContentType.values[contentType],
         message: SocketMessage.fromMap(TypeUtil.parseMap(message)),
         status: Status.sending,
         read: false,
