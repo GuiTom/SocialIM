@@ -1,9 +1,9 @@
 import 'package:base/base.dart';
 
-import 'k.dart';
+import 'locale/k.dart';
 
 class RtcApi {
-  //拨打通话
+  //发起通话
   static Future<int> sendNotificationCallPeer(int targetUid,bool isVideo,String token,String channelId) async{
     return SocketRadio.instance.sendMessage({
       'content':
@@ -20,39 +20,39 @@ class RtcApi {
   static void sendNotificationRejectPeer(int targetUid,int messageId) {
     SocketRadio.instance.sendMessage({
       'extraInfo': {
-        'handshakeStatus': 'rejected',
+        'handshakeStatus': HandShakeStatus.rejected.name,
         'targetMessageId':messageId,
       }
-    }, targetUid, TargetType.Private,MsgContentType.ChatRtcHandshakeChange);
+    }, targetUid, TargetType.Private,MsgContentType.ChatRtcHandshakeChange,msgId: messageId);
   }
   //挂断通话
   static void sendNotificationHangup(int targetUid,int duration,int messageId) {
     SocketRadio.instance.sendMessage({
       'extraInfo': {
-        'handshakeStatus': 'finished',
+        'handshakeStatus': HandShakeStatus.finished.name,
         'duration': duration,
         'targetMessageId':messageId,
       }
-    }, targetUid, TargetType.Private,MsgContentType.ChatRtcHandshakeChange);
+    }, targetUid, TargetType.Private,MsgContentType.ChatRtcHandshakeChange,msgId: messageId);
   }
   //通话超时
   static void sendNotificationTimeoutToPeer(int targetUid,int duration,int messageId) {
     SocketRadio.instance.sendMessage({
       'extraInfo': {
-        'handshakeStatus': 'timeout',
+        'handshakeStatus': HandShakeStatus.timeout.name,
         'duration': duration,
         'targetMessageId':messageId,
       }
-    }, targetUid, TargetType.Private,MsgContentType.ChatRtcHandshakeChange);
+    }, targetUid, TargetType.Private,MsgContentType.ChatRtcHandshakeChange,msgId: messageId);
   }
   //取消通话
   static void sendNotificationCancelToPeer(int targetUid,int messageId) {
     SocketRadio.instance.sendMessage({
       'extraInfo': {
-        'handshakeStatus': 'cancel',
+        'handshakeStatus': HandShakeStatus.canceled.name,
         'targetMessageId':messageId,
       }
-    }, targetUid, TargetType.Private,MsgContentType.ChatRtcHandshakeChange);
+    }, targetUid, TargetType.Private,MsgContentType.ChatRtcHandshakeChange,msgId: messageId);
   }
 
 }

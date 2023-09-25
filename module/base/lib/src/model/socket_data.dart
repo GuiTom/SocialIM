@@ -152,7 +152,7 @@ class SocketData {
         targetId: map['targetId'] ?? 0,
         targetType: TargetType.values[map['targetType'] ?? 0],
         createAt: map['createAt'] ?? 0,
-        contentType: map['contentType'] ?? 0,
+        contentType:MsgContentType.values[map['contentType'] ?? 0],
         read: map['read'] == 1 ? true : false,
         status: Status.values[map['status'] ?? 0],
         message: SocketMessage.fromMap(TypeUtil.parseMap(map["message"])));

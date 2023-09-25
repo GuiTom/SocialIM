@@ -6,7 +6,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 import 'locale/k.dart';
-import 'locale/rtc_api.dart';
+import 'rtc_api.dart';
 import 'message_api.dart';
 
 class VideoCallPage extends StatefulWidget {
