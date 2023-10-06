@@ -62,7 +62,7 @@ class MessageRouter implements IMessageRouter {
             // List<SocketData> sockets = await session.messages;
             int res = await DatabaseHelper.instance.updateMessage(primaryData);
             dog.d('res:$res');
-            eventCenter.emit('messageReceived',socketData);
+            eventCenter.emit('HandshakeChangeMessageReceived',[socketData,primaryData]);
           }
         } else if (socketData.contentType == MsgContentType.Recipt) {
           // dog.d('socketData ->reply:${socketData}');

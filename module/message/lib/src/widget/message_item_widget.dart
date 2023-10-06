@@ -14,6 +14,7 @@ import '../locale/k.dart';
 import 'package:base/src/locale/k.dart' as BaseK;
 
 import 'chat_rtc_bubble.dart';
+
 enum MenuId {
   resend,
   delete,
@@ -134,9 +135,9 @@ class _State extends State<ChatMessageItem> {
         isPlaying: widget.playingIndex == widget.listIndex,
         durationInMillseconds: widget.data.message.extraInfo['duration'],
       );
-    }else if (widget.data.contentType == MsgContentType.ChatRtcAudio) {
+    } else if (widget.data.contentType == MsgContentType.ChatRtcAudio) {
       child = ChatBubble(isLeft: isLeft, text: widget.data.message.content);
-    }else if (widget.data.contentType == MsgContentType.ChatRTCVideo) {
+    } else if (widget.data.contentType == MsgContentType.ChatRTCVideo) {
       child = ChatRtcBubble(isLeft: isLeft, data: widget.data);
     } else {
       child = const SizedBox(
@@ -149,9 +150,10 @@ class _State extends State<ChatMessageItem> {
       onTap: () {
         if (widget.data.contentType == MsgContentType.ChatAudio) {
           _handelTapAudio();
-        }
-        else if(widget.data.contentType==MsgContentType.ChatRTCVideo||widget.data.contentType==MsgContentType.ChatRtcAudio){
-          VideoCallPage.show(context, true,widget.data.targetId,0,widget.data.message.extraInfo['senderName']);
+        } else if (widget.data.contentType == MsgContentType.ChatRTCVideo ||
+            widget.data.contentType == MsgContentType.ChatRtcAudio) {
+          VideoCallPage.show(context, true, widget.data.sendBySelf?widget.data.targetId:widget.data.srcUid, 0,
+              widget.data.message.extraInfo['senderName']);
         }
         widget.onTap?.call();
       },
@@ -171,9 +173,10 @@ class _State extends State<ChatMessageItem> {
     List<Widget> children = [
       UserHeadWidget(
         imageUrl: Util.getHeadIconUrl(widget.data.srcUid),
-        uid:widget.data.srcUid,
+        uid: widget.data.srcUid,
         size: 40,
-        isMale:widget.data.peerGender==1||(widget.data.sendBySelf&&Session.userInfo.sex==1),
+        isMale: widget.data.peerGender == 1 ||
+            (widget.data.sendBySelf && Session.userInfo.sex == 1),
       ),
       const SizedBox(
         width: 12,
@@ -182,9 +185,11 @@ class _State extends State<ChatMessageItem> {
       const SizedBox(
         width: 6,
       ),
-      if (widget.data.contentType == MsgContentType.ChatAudio &&
-          !widget.data.read &&
-          !widget.data.sendBySelf)
+      if ((widget.data.contentType == MsgContentType.ChatAudio ||
+          widget.data.contentType == MsgContentType.ChatRTCVideo ||
+          widget.data.contentType == MsgContentType.ChatRtcAudio) &&
+              !widget.data.read &&
+              !widget.data.sendBySelf)
         Padding(
           padding: const EdgeInsetsDirectional.only(top: 20),
           child: _buildUnReadFlagWidget(),

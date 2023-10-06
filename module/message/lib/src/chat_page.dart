@@ -79,6 +79,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
       _showEmojiPanel = _showEmojiPanel && bottomInset <= 0;
     });
   }
+
   void _messageAddedd(String type, Object data) async {
     _messgaeSession!.offsetDelta += 1;
     _messages = await _messgaeSession!.messages;
@@ -106,7 +107,9 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
     _messgaeSession!.setMessageReadStatus(_messages!
         .where((element) =>
             (element.contentType == MsgContentType.ChatText ||
-                element.contentType == MsgContentType.ChatImage) &&
+                element.contentType == MsgContentType.ChatImage ||
+                element.contentType == MsgContentType.ChatRTCVideo ||
+                element.contentType == MsgContentType.ChatRtcAudio) &&
             !element.sendBySelf &&
             !element.read)
         .toList());
@@ -266,7 +269,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
                 'filePath': resp.filePath,
                 'duration': recordDetail['duration'],
               }
-            }, widget.targetId, TargetType.Private,MsgContentType.ChatAudio);
+            }, widget.targetId, TargetType.Private, MsgContentType.ChatAudio);
           } else {
             ToastUtil.showCenter(msg: resp.message);
           }
@@ -309,7 +312,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
         'senderGender': Session.userInfo.sex,
         'receiverName': widget.targetName
       }
-    }, widget.targetId, TargetType.Private,MsgContentType.ChatText);
+    }, widget.targetId, TargetType.Private, MsgContentType.ChatText);
     _textController.clear();
     _showEmojiPanel = false;
     setState(() {});
@@ -373,14 +376,17 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
                     width: 28,
                     height: 28,
                   ),
-                  const SizedBox(width: 5,),
+                  const SizedBox(
+                    width: 5,
+                  ),
                   Text(K.getTranslation('video_call')),
                 ],
               ),
               onTap: () {
                 // Handle action when 'Choose from Gallery' is tapped
                 Navigator.pop(context);
-                VideoCallPage.show(context, true,widget.targetId,0,widget.targetName);
+                VideoCallPage.show(
+                    context, true, widget.targetId, 0, widget.targetName);
               },
             ),
             ListTile(
@@ -393,7 +399,9 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
                     width: 28,
                     height: 28,
                   ),
-                  const SizedBox(width: 5,),
+                  const SizedBox(
+                    width: 5,
+                  ),
                   Text(K.getTranslation('voice_call')),
                 ],
               ),
@@ -407,7 +415,10 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
               color: const Color(0xFFE1E1E1),
             ),
             ListTile(
-              title: Text(BaseK.K.getTranslation('cancel'),textAlign: TextAlign.center,),
+              title: Text(
+                BaseK.K.getTranslation('cancel'),
+                textAlign: TextAlign.center,
+              ),
               onTap: () {
                 // Handle action when 'Take a Photo' is tapped
                 Navigator.pop(context);
@@ -446,7 +457,6 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
         pbMsg: UploadResp.create());
     if (resp.code == 1) {
       SocketRadio.instance.sendMessage({
-
         'content': '[${K.getTranslation('picture')}]',
         'extraInfo': {
           'senderName': Session.userInfo.name,
@@ -456,7 +466,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
           'imageWidth': imageWidth,
           'imageHeight': imageHeight,
         }
-      }, widget.targetId, TargetType.Private,MsgContentType.ChatImage);
+      }, widget.targetId, TargetType.Private, MsgContentType.ChatImage);
     } else {
       ToastUtil.showCenter(msg: resp.message);
     }
