@@ -7,6 +7,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
 import 'package:message/src/model/message_session.dart';
 import 'package:message/src/util/DatabaseHelper.dart';
+import '../video_call_page.dart';
 import 'chat_audio.dart';
 import 'chat_bubble.dart';
 import '../locale/k.dart';
@@ -148,6 +149,9 @@ class _State extends State<ChatMessageItem> {
       onTap: () {
         if (widget.data.contentType == MsgContentType.ChatAudio) {
           _handelTapAudio();
+        }
+        else if(widget.data.contentType==MsgContentType.ChatRTCVideo||widget.data.contentType==MsgContentType.ChatRtcAudio){
+          VideoCallPage.show(context, true,widget.data.targetId,0);
         }
         widget.onTap?.call();
       },
