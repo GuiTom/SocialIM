@@ -104,12 +104,27 @@ class _MyHomePageState extends State<MyHomePage> {
       if(message.data['pushType']=='chatMessage') {
         String targetName = message?.notification?.title ?? '';
         if (targetName.isNotEmpty) {
-          // int targetType = TypeUtil.parseInt(message.data['targetType'],1);
           int srcUid = TypeUtil.parseInt(message.data['srcUid']);
           IMessageRouter messageRouter = (RouterManager.instance
               .getModuleRouter(ModuleType.Message) as IMessageRouter);
-          // dog.d('message2:$message');
+
           messageRouter.toChatPage(srcUid, targetName);
+        }
+      }else  if(message.data['pushType']=='chatRTCVideo') {
+        String targetName = message?.notification?.title ?? '';
+        if (targetName.isNotEmpty) {
+          int srcUid = TypeUtil.parseInt(message.data['srcUid']);
+          IMessageRouter messageRouter = (RouterManager.instance
+              .getModuleRouter(ModuleType.Message) as IMessageRouter);
+          messageRouter.showRTCCall(context, true, srcUid,targetName);
+        }
+      }if(message.data['pushType']=='chatRTCAudio') {
+        String targetName = message?.notification?.title ?? '';
+        if (targetName.isNotEmpty) {
+          int srcUid = TypeUtil.parseInt(message.data['srcUid']);
+          IMessageRouter messageRouter = (RouterManager.instance
+              .getModuleRouter(ModuleType.Message) as IMessageRouter);
+          messageRouter.showRTCCall(context, false, srcUid,targetName);
         }
       }
   }

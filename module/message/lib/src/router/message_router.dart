@@ -20,6 +20,11 @@ class MessageRouter implements IMessageRouter {
   }
 
   @override
+  void showRTCCall(
+      BuildContext context, bool isVideo, int targetUid,String senderName) {
+    VideoCallPage.show(context, isVideo,targetUid,0,senderName);
+  }
+  @override
   void listenMessage() async {
     eventCenter.addListener('socket_message', (type, data) {
       _onReceivedMessage(type, data);
@@ -86,6 +91,7 @@ class MessageRouter implements IMessageRouter {
                 socketData.contentType == MsgContentType.ChatRTCVideo,
                 socketData.srcUid,
                 socketData.messageId,
+                socketData.message.extraInfo['senderName'],
                 channelId: socketData.message.extraInfo['channelId'],
               );
             }

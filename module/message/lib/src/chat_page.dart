@@ -361,62 +361,60 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          child: Wrap(
-            children: <Widget>[
-              ListTile(
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icon_call_video.svg',
-                      package: 'message',
-                      width: 28,
-                      height: 28,
-                    ),
-                    const SizedBox(width: 5,),
-                    Text(K.getTranslation('video_call')),
-                  ],
-                ),
-                onTap: () {
-                  // Handle action when 'Choose from Gallery' is tapped
-                  Navigator.pop(context);
-                  VideoCallPage.show(context, true,widget.targetId,0);
-                },
+        return Wrap(
+          children: <Widget>[
+            ListTile(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    'assets/icon_call_video.svg',
+                    package: 'message',
+                    width: 28,
+                    height: 28,
+                  ),
+                  const SizedBox(width: 5,),
+                  Text(K.getTranslation('video_call')),
+                ],
               ),
-              ListTile(
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icon_call_voice.svg',
-                      package: 'message',
-                      width: 28,
-                      height: 28,
-                    ),
-                    const SizedBox(width: 5,),
-                    Text(K.getTranslation('voice_call')),
-                  ],
-                ),
-                onTap: () {
-                  // Handle action when 'Take a Photo' is tapped
-                  Navigator.pop(context);
-                },
+              onTap: () {
+                // Handle action when 'Choose from Gallery' is tapped
+                Navigator.pop(context);
+                VideoCallPage.show(context, true,widget.targetId,0,widget.targetName);
+              },
+            ),
+            ListTile(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    'assets/icon_call_voice.svg',
+                    package: 'message',
+                    width: 28,
+                    height: 28,
+                  ),
+                  const SizedBox(width: 5,),
+                  Text(K.getTranslation('voice_call')),
+                ],
               ),
-              Container(
-                height: 5,
-                color: const Color(0xFFE1E1E1),
-              ),
-              ListTile(
-                title: Text(BaseK.K.getTranslation('cancel'),textAlign: TextAlign.center,),
-                onTap: () {
-                  // Handle action when 'Take a Photo' is tapped
-                  Navigator.pop(context);
-                },
-              ),
-              // Add more ListTiles for additional actions
-            ],
-          ),
+              onTap: () {
+                // Handle action when 'Take a Photo' is tapped
+                Navigator.pop(context);
+              },
+            ),
+            Container(
+              height: 5,
+              color: const Color(0xFFE1E1E1),
+            ),
+            ListTile(
+              title: Text(BaseK.K.getTranslation('cancel'),textAlign: TextAlign.center,),
+              onTap: () {
+                // Handle action when 'Take a Photo' is tapped
+                Navigator.pop(context);
+              },
+            ),
+            // Add more ListTiles for additional actions
+          ],
         );
       },
     );

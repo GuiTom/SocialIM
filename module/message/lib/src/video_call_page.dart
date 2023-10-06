@@ -31,7 +31,7 @@ class VideoCallPage extends StatefulWidget {
   }
 
   static Future show(
-      BuildContext context, bool isVideo, int targetUid, int messageId,
+      BuildContext context, bool isVideo, int targetUid, int messageId,String targetName,
       {String? channelId}) {
     return showMaterialModalBottomSheet(
         context: context,

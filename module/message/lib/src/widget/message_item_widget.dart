@@ -151,7 +151,7 @@ class _State extends State<ChatMessageItem> {
           _handelTapAudio();
         }
         else if(widget.data.contentType==MsgContentType.ChatRTCVideo||widget.data.contentType==MsgContentType.ChatRtcAudio){
-          VideoCallPage.show(context, true,widget.data.targetId,0);
+          VideoCallPage.show(context, true,widget.data.targetId,0,widget.data.message.extraInfo['senderName']);
         }
         widget.onTap?.call();
       },
