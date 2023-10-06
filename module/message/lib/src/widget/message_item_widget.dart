@@ -153,7 +153,7 @@ class _State extends State<ChatMessageItem> {
         } else if (widget.data.contentType == MsgContentType.ChatRTCVideo ||
             widget.data.contentType == MsgContentType.ChatRtcAudio) {
           VideoCallPage.show(context, true, widget.data.sendBySelf?widget.data.targetId:widget.data.srcUid, 0,
-              widget.data.message.extraInfo['senderName']);
+              widget.data.targetId==Session.uid?widget.data.message.extraInfo['senderName']:widget.data.message.extraInfo['receiverName']);
         }
         widget.onTap?.call();
       },

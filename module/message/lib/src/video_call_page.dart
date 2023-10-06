@@ -98,12 +98,14 @@ class _State extends State<VideoCallPage> {
       } else if (_data.message.extraInfo['handshakeStatus'] == 'finished') {
         ToastUtil.showCenter(msg: K.getTranslation('session_ended'));
       }
-      MessageSession session = (await MessageSession.getSession(
-          targetType: _primaryData.targetType,
-          targetId: _targetUid,
-          sessionName: _primaryData.sessionName,
-          sessionId: _primaryData.sessionId ?? ''));
-      session.setMessageReadStatus([_primaryData]);
+      if (!(_data.message.extraInfo['handshakeStatus'] == 'timeout'&&!_primaryData.sendBySelf)) {
+        MessageSession session = (await MessageSession.getSession(
+            targetType: _primaryData.targetType,
+            targetId: _targetUid,
+            sessionName: _primaryData.sessionName,
+            sessionId: _primaryData.sessionId ?? ''));
+        session.setMessageReadStatus([_primaryData]);
+      }
       await _engine!.leaveChannel();
       if (!mounted) return;
       Navigator.pop(context);
