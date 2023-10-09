@@ -34,6 +34,6 @@ class ZhCn {
     "canceled":"已取消",
     "no_answer":"未接听",
 
-    "session_duration":"通话时长",
+    "session_duration":"通话时长:%1",
   };
 }

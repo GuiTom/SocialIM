@@ -82,6 +82,7 @@ class _State extends State<VideoCallPage> {
 
   void _messageReceived(String type, Object data) async {
     SocketData _data = (data as List).first;
+
     SocketData _primaryData = (data as List).last;
     if (_data.contentType == MsgContentType.ChatRtcHandshakeChange) {
       if (!mounted) return;
@@ -93,6 +94,7 @@ class _State extends State<VideoCallPage> {
         }
       } else if (_data.message.extraInfo['handshakeStatus'] == 'canceled') {
         ToastUtil.showCenter(msg: K.getTranslation('canceled'));
+
       } else if (_data.message.extraInfo['handshakeStatus'] == 'timeout') {
         ToastUtil.showCenter(msg: K.getTranslation('no_answer'));
       } else if (_data.message.extraInfo['handshakeStatus'] == 'finished') {
@@ -109,6 +111,7 @@ class _State extends State<VideoCallPage> {
       await _engine!.leaveChannel();
       if (!mounted) return;
       Navigator.pop(context);
+      eventCenter.emit('messageAded');
     }
   }
 
@@ -147,7 +150,8 @@ class _State extends State<VideoCallPage> {
         });
         if (widget.channelId == null) {
           _messageId = await RtcApi.sendNotificationCallPeer(
-              _targetUid, _isVideo, _token ?? '', _channelId!);
+              _targetUid,  _isVideo, _token ?? '', _channelId!);
+          _startTimeCount();
         }
       }, onRejoinChannelSuccess: (RtcConnection connection, int elapsed) async {
         debugPrint("local user ${connection.localUid} joined");
@@ -174,7 +178,9 @@ class _State extends State<VideoCallPage> {
         debugPrint("remote user $remoteUid left channel");
         _callStatus = CallStatus.Closed;
         if (remoteUid != Session.uid) {
-          Navigator.pop(context);
+          eventCenter.emit('messageAded');
+          // if(!mounted) return;
+          // Navigator.pop(context);
         }
         _stopTimeCount();
       }, onRemoteVideoStateChanged: (RtcConnection connection,
@@ -470,10 +476,10 @@ class _State extends State<VideoCallPage> {
                   ToastUtil.showTop(msg: K.getTranslation('canceled'));
                   RtcApi.sendNotificationCancelToPeer(_targetUid, _messageId);
                 }
-                await _engine!.leaveChannel();
-                await Future.delayed(const Duration(milliseconds: 400));
-                if (!mounted) return;
-                Navigator.pop(context);
+                // await _engine!.leaveChannel();
+                // await Future.delayed(const Duration(milliseconds: 400));
+                // if (!mounted) return;
+                // Navigator.pop(context);
               },
               icon: SvgPicture.asset(
                 'assets/icon_to_hangup.svg',
@@ -496,9 +502,9 @@ class _State extends State<VideoCallPage> {
                     sessionName: widget.socketData!.sessionName,
                     sessionId: widget.socketData!.sessionId ?? ''));
                 session.setMessageReadStatus([widget.socketData!]);
-                await Future.delayed(const Duration(milliseconds: 400));
-                if (!mounted) return;
-                Navigator.pop(context);
+                // await Future.delayed(const Duration(milliseconds: 400));
+                // if (!mounted) return;
+                // Navigator.pop(context);
               },
               icon: SvgPicture.asset(
                 'assets/icon_to_hangup.svg',
@@ -554,11 +560,12 @@ class _State extends State<VideoCallPage> {
       _timerText =
           '${(timer.tick ~/ 60).toString().padLeft(2, '0')}:${(timer.tick % 60).toString().padLeft(2, '0')}';
       if (timer.tick >= 60) {
+        timer.cancel();
         //挂断
         if (!mounted) return;
         RtcApi.sendNotificationTimeoutToPeer(
             _targetUid, timer.tick, _messageId);
-        Navigator.pop(context);
+        // Navigator.pop(context);
         return;
       }
       setState(() {});

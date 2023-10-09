@@ -6,11 +6,12 @@ import 'message_item_widget.dart';
 import 'package:base/src/widget/image_viewer.dart';
 
 class MessageListWidget extends StatefulWidget {
-  const MessageListWidget({Key? key, required this.messgageSession,required this.messages,required this.onScrollToTop})
+  const MessageListWidget({Key? key, required this.messgageSession,required this.messages,required this.onScrollToTop, required this.targetName})
       : super(key: key);
   final void Function() onScrollToTop;
   final MessageSession messgageSession;
   final List<SocketData> messages;
+  final String targetName;
   @override
   State<StatefulWidget> createState() => _State();
 }
@@ -73,6 +74,7 @@ class _State extends State<MessageListWidget> {
               audiolayer: _mPlayer,
               listIndex: index,
               playingIndex: _playingIndex,
+              targetName: widget.targetName,
               onPlayerStatusChange: (int idx) {
                 _playingIndex = idx;
                 setState(() {});

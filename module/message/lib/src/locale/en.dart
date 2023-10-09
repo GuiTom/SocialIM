@@ -33,6 +33,6 @@ class En {
     "session_ended":"session ended",
     "canceled":"cancled",
     "no_answer":"no answer",
-    "session_duration":"session duration",
+    "session_duration":"session duration:%s",
   };
 }

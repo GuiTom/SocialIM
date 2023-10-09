@@ -35,7 +35,7 @@ class ChatMessageItem extends StatefulWidget {
   final int listIndex;
   final int playingIndex;
   final GestureTapCallback? onTap;
-
+  final String targetName;
   const ChatMessageItem(
       {Key? key,
       required this.data,
@@ -43,7 +43,7 @@ class ChatMessageItem extends StatefulWidget {
       required this.onPlayerStatusChange,
       required this.playingIndex,
       required this.listIndex,
-      required this.onTap})
+      required this.onTap, required this.targetName})
       : super(key: key);
 
   @override
@@ -153,7 +153,7 @@ class _State extends State<ChatMessageItem> {
         } else if (widget.data.contentType == MsgContentType.ChatRTCVideo ||
             widget.data.contentType == MsgContentType.ChatRtcAudio) {
           VideoCallPage.show(context, true, widget.data.sendBySelf?widget.data.targetId:widget.data.srcUid, 0,
-              widget.data.targetId==Session.uid?widget.data.message.extraInfo['senderName']:widget.data.message.extraInfo['receiverName']);
+              widget.data.targetId==Session.uid?widget.data.message.extraInfo['senderName']:widget.targetName);
         }
         widget.onTap?.call();
       },

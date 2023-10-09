@@ -95,7 +95,13 @@ class _State extends State<ChatRtcBubble> {
     } else if (widget.data.message.extraInfo['handshakeStatus'] == HandShakeStatus.finished.name) {
       int duration = widget.data.message.extraInfo['duration'] ?? 0;
       content = K.getTranslation('session_duration', args: [
-        '${(duration ~/ 60).toString().padLeft(2, '0')}:${(duration % 60).toString().padLeft(2, '0')}'
+        (){
+         String content = '${((duration ~/ 60)%60).toString().padLeft(2, '0')}:${(duration % 60).toString().padLeft(2, '0')}';
+         if(duration>3600){
+           content = '${(duration~/3600).toString().padLeft(2, '0')}:$content';
+         }
+         return content;
+        }()
       ]);
     } else {
       content = widget.data.message.content;

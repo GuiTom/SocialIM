@@ -147,6 +147,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
                   _messages = await _messgaeSession!.more();
                   setState(() {});
                 },
+                targetName: widget.targetName,
                 messgageSession: _messgaeSession!,
                 messages: _messages!,
               ),
