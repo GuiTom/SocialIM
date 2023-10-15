@@ -2,6 +2,7 @@ import 'package:base/base.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:live_room/live_room.dart';
 import 'package:login/login.dart';
 import 'package:message/message.dart';
@@ -38,6 +39,18 @@ class Boot {
 
   static initFireBase() async{
       // await setupFlutterNotifications();
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'high_importance_channel', // id
+      'High Importance Notifications', // title
+     description: 'This channel is used for important notifications.', // description
+      importance: Importance.high,
+    );
+
+    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+// 在初始化插件时添加通知渠道
+    await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
+
     final fcmToken = await FirebaseMessaging.instance.getToken();
     dog.d('fcmToken:$fcmToken');
     Constant.pushToken = fcmToken??'';
