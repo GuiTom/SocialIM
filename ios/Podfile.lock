@@ -33,6 +33,12 @@ PODS:
   - AgoraRtcEngine_iOS/VideoCodecEnc (4.2.2)
   - AgoraRtcEngine_iOS/VirtualBackground (4.2.2)
   - AgoraRtcEngine_iOS/VQA (4.2.2)
+  - AppAuth (1.6.2):
+    - AppAuth/Core (= 1.6.2)
+    - AppAuth/ExternalUserAgent (= 1.6.2)
+  - AppAuth/Core (1.6.2)
+  - AppAuth/ExternalUserAgent (1.6.2):
+    - AppAuth/Core
   - audioplayers_darwin (0.0.1):
     - Flutter
   - connectivity_plus (0.0.1):
@@ -110,10 +116,17 @@ PODS:
     - Flutter
   - geolocator_apple (1.2.0):
     - Flutter
+  - google_sign_in_ios (0.0.1):
+    - Flutter
+    - GoogleSignIn (~> 6.2)
   - GoogleDataTransport (9.2.5):
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30910.0, >= 2.30908.0)
     - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleSignIn (6.2.4):
+    - AppAuth (~> 1.5)
+    - GTMAppAuth (~> 1.3)
+    - GTMSessionFetcher/Core (< 3.0, >= 1.1)
   - GoogleUtilities/AppDelegateSwizzler (7.11.5):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
@@ -131,6 +144,10 @@ PODS:
     - GoogleUtilities/Logger
   - GoogleUtilities/UserDefaults (7.11.5):
     - GoogleUtilities/Logger
+  - GTMAppAuth (1.3.1):
+    - AppAuth/Core (~> 1.6)
+    - GTMSessionFetcher/Core (< 3.0, >= 1.5)
+  - GTMSessionFetcher/Core (2.3.0)
   - image_compression_flutter (1.0.0):
     - Flutter
   - image_editor_common (1.0.0):
@@ -210,6 +227,7 @@ DEPENDENCIES:
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - geocoding_ios (from `.symlinks/plugins/geocoding_ios/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
+  - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/ios`)
   - image_compression_flutter (from `.symlinks/plugins/image_compression_flutter/ios`)
   - image_editor_common (from `.symlinks/plugins/image_editor_common/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
@@ -227,6 +245,7 @@ SPEC REPOS:
   trunk:
     - AgoraIrisRTC_iOS
     - AgoraRtcEngine_iOS
+    - AppAuth
     - Firebase
     - FirebaseCore
     - FirebaseCoreInternal
@@ -235,7 +254,10 @@ SPEC REPOS:
     - flutter_sound_core
     - FMDB
     - GoogleDataTransport
+    - GoogleSignIn
     - GoogleUtilities
+    - GTMAppAuth
+    - GTMSessionFetcher
     - libwebp
     - Mantle
     - nanopb
@@ -284,6 +306,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/geocoding_ios/ios"
   geolocator_apple:
     :path: ".symlinks/plugins/geolocator_apple/ios"
+  google_sign_in_ios:
+    :path: ".symlinks/plugins/google_sign_in_ios/ios"
   image_compression_flutter:
     :path: ".symlinks/plugins/image_compression_flutter/ios"
   image_editor_common:
@@ -313,6 +337,7 @@ SPEC CHECKSUMS:
   agora_rtc_engine: 667a7de14f35858a31b0c64cd54042a2158ef198
   AgoraIrisRTC_iOS: 7e71322c06db6c29ceaf89a964fb8b2700a75001
   AgoraRtcEngine_iOS: c510de329cd905daff3f01fa4c872ea6d5eaee23
+  AppAuth: 3bb1d1cd9340bd09f5ed189fb00b1cc28e1e8570
   audioplayers_darwin: 877d9a4d06331c5c374595e46e16453ac7eafa40
   connectivity_plus: 413a8857dd5d9f1c399a39130850d02fe0feaf7e
   emoji_picker_flutter: df19dac03a2b39ac667dc8d1da939ef3a9e21347
@@ -337,8 +362,12 @@ SPEC CHECKSUMS:
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   geocoding_ios: a389ea40f6f548de6e63006a2e31bf66ff80769a
   geolocator_apple: b741765c55dc21950e3e106e8b3584e55cf81ce5
+  google_sign_in_ios: 1256ff9d941db546373826966720b0c24804bcdd
   GoogleDataTransport: 54dee9d48d14580407f8f5fbf2f496e92437a2f2
+  GoogleSignIn: 5651ce3a61e56ca864160e79b484cd9ed3f49b7a
   GoogleUtilities: 13e2c67ede716b8741c7989e26893d151b2b2084
+  GTMAppAuth: 0ff230db599948a9ad7470ca667337803b3fc4dd
+  GTMSessionFetcher: 3a63d75eecd6aa32c2fc79f578064e1214dfdec2
   image_compression_flutter: 5327fc5ee43f5ee6107d44ff0d4480a363788358
   image_editor_common: d6f6644ae4a6de80481e89fe6d0a8c49e30b4b43
   image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5

@@ -47,8 +47,8 @@ class _State extends State<GetSmsCodeWidget> {
               _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
                 if (timer.tick >= 60) {
                   timer.cancel();
-                  setState(() {});
                 }
+                setState(() {});
               });
               setState(() {});
             }
@@ -60,8 +60,8 @@ class _State extends State<GetSmsCodeWidget> {
               _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
                 if (timer.tick >= 60) {
                   timer.cancel();
-                  setState(() {});
                 }
+                setState(() {});
               });
               setState(() {});
             }

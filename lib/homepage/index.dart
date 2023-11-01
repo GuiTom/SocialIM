@@ -144,41 +144,44 @@ class HomeIndexPageState extends State<StatefulWidget> {
             const SizedBox(
               width: 6,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      item.data.name,
-                      textAlign: TextAlign.start,
-                      style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400),
-                    ),
-                    const SizedBox(
-                      width: 6,
-                    ),
-                    SexAgeLabelWidget(
-                        sex: item.data.sex,
-                        age: Util.calculateAge(item.data.bornAt.toInt())),
-                  ],
-                ),
-                const SizedBox(
-                  height: 12,
-                ),
-                Text(
-                  item.data.signature,
-                  style: const TextStyle(
-                      color: Color(0x2F111111),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400),
-                ),
-              ],
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        item.data.name,
+                        textAlign: TextAlign.start,
+                        style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400),
+                      ),
+                      const SizedBox(
+                        width: 6,
+                      ),
+                      SexAgeLabelWidget(
+                          sex: item.data.sex,
+                          age: Util.calculateAge(item.data.bornAt.toInt())),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  Text(
+                    item.data.signature,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: Color(0x2F111111),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400),
+                  ),
+                ],
+              ),
             ),
-            const Spacer(),
             _buildChatButton(item),
           ],
         ),

@@ -215,8 +215,8 @@ class _State extends State<LoginPage> {
 
   Widget _buildGetSmsCodeButton() {
     return GetSmsCodeWidget(
-      areaCode: _areaCode!,
-      phone: _phone!,
+      areaCode: _areaCode,
+      phone: _phone,
       email: _email,
       smsType: 'login',
     );
