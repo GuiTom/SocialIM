@@ -15,7 +15,9 @@ class Session {
   }
 
   static void _sync() {
-    PrefsHelper.setString('userInfo', userInfo.writeToJson());
+    String userInfoStr = _userInfo?.writeToJson()??'';
+    // print('userInfoStr:$userInfoStr');
+    PrefsHelper.setString('userInfo', userInfoStr);
   }
 
   static set userInfo(User? user) {
@@ -166,12 +168,12 @@ class Session {
   }
   static DateTime get monthlyVipExpireDate {
     final date =
-    DateTime.fromMillisecondsSinceEpoch(userInfo.monthlyVipExpireAt*1000);
+    DateTime.fromMillisecondsSinceEpoch(userInfo.monthlyVipExpireAt.toInt());
     return date;
   }
   static DateTime get yearlyVipExpireDate {
     final date =
-    DateTime.fromMillisecondsSinceEpoch(userInfo.yearlyVipExpireAt*1000);
+    DateTime.fromMillisecondsSinceEpoch(userInfo.yearlyVipExpireAt.toInt());
     return date;
   }
 
@@ -189,11 +191,11 @@ class Session {
     PrefsHelper.setString('userInfo', userInfo.writeToJson());
   }
   static set monthlyVipExpireAt(int t) {
-    userInfo.monthlyVipExpireAt = t;
+    userInfo.monthlyVipExpireAt = Int64(t);
     _sync();
   }
   static set yearlyVipExpireAt(int t) {
-    userInfo.yearlyVipExpireAt = t;
+    userInfo.yearlyVipExpireAt = Int64(t);
     _sync();
   }
   static set hasCrown(bool value) {
@@ -226,7 +228,7 @@ class Session {
   }
 
   static set bornAt(int bornAt) {
-    userInfo.bornAt = bornAt;
+    userInfo.bornAt = Int64(bornAt);
     _sync();
   }
 

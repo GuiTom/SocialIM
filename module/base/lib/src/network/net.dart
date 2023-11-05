@@ -61,7 +61,7 @@ class Net {
               msg: K.getTranslation('netowrk_response_timeout'));
         }
       }
-      dog.d(error);
+      dog.d('url:$url=>$error');
     }
     return pbMsg;
   }

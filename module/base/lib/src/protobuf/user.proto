@@ -35,6 +35,7 @@ message User {
   int64 yearlyVipExpireAt = 29;
   bool hasCrown = 30;
   int32 coin = 31;
+  int32 forbidden = 32;
 }
 message UserListResp {
   int32 code = 1;
@@ -56,7 +57,6 @@ message FriendListResp{
   int32 code = 1;
   string  message = 2;
   repeated User list = 3;
-
 }
 message FocusListResp{
   int32 code = 1;
@@ -69,11 +69,11 @@ message FansListResp{
   string  message = 2;
   repeated User list = 3;
 }
-
 message UserBlackListResp{
   int32 code = 1;
   string  message = 2;
   repeated User list = 3;
 }
+
 
 

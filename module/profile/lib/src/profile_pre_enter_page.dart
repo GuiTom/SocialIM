@@ -35,7 +35,7 @@ class _State extends State<ProfilePreEnterPage> {
   late final TextEditingController _genderController;
   late final TextEditingController _areaController;
 
-  int _selectedBornAt = Session.userInfo.bornAt;
+  int _selectedBornAt = Session.userInfo.bornAt.toInt();
   int _selectedGender = Session.userInfo.sex;
   String _selectedCountry = Session.userInfo.countryName;
   String _selectedCity = Session.userInfo.cityName;
@@ -284,7 +284,7 @@ class _State extends State<ProfilePreEnterPage> {
           );
           if (picked == null) return;
 
-          _selectedBornAt = picked!.second;
+          _selectedBornAt = picked!.millisecond;
           _birrthDayController.text = DateFormat(
                   BaseK.K.getTranslation('date_str', args: ['yyyy', 'M', 'd']))
               .format(picked!);
@@ -439,7 +439,7 @@ class _State extends State<ProfilePreEnterPage> {
     return ThrottleInkWell(
       onTap: () async {
         Resp resp = await ProfileApi.setUerInfo({
-          'bornAt': _selectedBornAt*1000,
+          'bornAt': _selectedBornAt,
           'sex': _selectedGender,
           'name': _nickNameController.text,
           'cityName': _selectedCity ?? '',

@@ -312,7 +312,7 @@ class _State extends State<ProfileEditPage> {
         Resp resp = await ProfileApi.setUerInfo(
             {'bornAt': picked!.millisecondsSinceEpoch});
         if (resp.code == 1) {
-          Session.bornAt = picked!.millisecondsSinceEpoch ~/ 1000;
+          Session.bornAt = picked!.millisecondsSinceEpoch;
           setState(() {});
         }
       },
