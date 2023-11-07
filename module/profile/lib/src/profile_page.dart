@@ -470,9 +470,9 @@ class _State extends State<ProfilePage> {
   Widget _buildFortuneLevelWidget() {
     return GestureDetector(
       onTap: (){
-        if(Platform.isIOS) {
+        // if(Platform.isIOS) {
           IAPPage.show(context);
-        }
+        // }
       },
       child: Container(
         height: 60,

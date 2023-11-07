@@ -11,10 +11,14 @@ import 'package:in_app_purchase_storekit/store_kit_wrappers.dart';
 
 import '../../locale/k.dart';
 
-const String _kConsumableId = 'com.gamepark.cc.ios.goldcoin';
-const String _kUpgradeId = 'com.gamepark.cc.ios.crown';
-const String _kSilverSubscriptionId = 'com.gamepark.cc.ios.month_vip';
-const String _kGoldSubscriptionId = 'com.gamepark.cc.ios.year_vip';
+// const String _kConsumableId = 'com.gamepark.cc.ios.goldcoin';
+// const String _kUpgradeId = 'com.gamepark.cc.ios.crown';
+// const String _kSilverSubscriptionId = 'com.gamepark.cc.ios.month_vip';
+// const String _kGoldSubscriptionId = 'com.gamepark.cc.ios.year_vip';
+const String _kConsumableId = 'gcoin';
+const String _kUpgradeId = 'com.gamepark.cc.android.crown';
+const String _kSilverSubscriptionId = 'com.gamepark.cc.android.month_vip';
+const String _kGoldSubscriptionId = 'pd12356';
 final bool _kAutoConsume = Platform.isIOS || true;
 
 const List<String> _kProductIds = <String>[
