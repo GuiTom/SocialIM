@@ -29,6 +29,8 @@ const List<String> _kProductIds = <String>[
 ];
 
 class IAPPage extends StatefulWidget {
+  const IAPPage({super.key});
+
   static Future show(BuildContext context) {
     return Navigator.of(context).push(
       MaterialPageRoute<bool>(
@@ -242,11 +244,18 @@ class _IAPPageState extends State<IAPPage> {
     // This loading previous purchases code is just a demo. Please do not use this as it is.
     // In your app you should always verify the purchase data using the `verificationData` inside the [PurchaseDetails] object before trusting it.
     // We recommend that you use your own server to verify the purchase data.
-
+    final Map<String, PurchaseDetails> purchases =
+    Map<String, PurchaseDetails>.fromEntries(
+        _purchases.map((PurchaseDetails purchase) {
+          if (purchase.pendingCompletePurchase) {
+            _inAppPurchase.completePurchase(purchase);
+          }
+          return MapEntry<String, PurchaseDetails>(purchase.productID, purchase);
+        }));
     productList.addAll(_products.map(
       (ProductDetails productDetails) {
 
-        bool enabled =  Platform.isIOS;
+        bool enabled =  true;
         if (productDetails?.id == _kSilverSubscriptionId) {
           if (Session.monthlyVipExpireDate.isAfter(DateTime.now())) {
             enabled = false;
@@ -280,18 +289,18 @@ class _IAPPageState extends State<IAPPage> {
                     late PurchaseParam purchaseParam;
 
                     if (Platform.isAndroid) {
-                      // final GooglePlayPurchaseDetails? oldSubscription =
-                      //     _getOldSubscription(productDetails, purchases);
-                      //
-                      // purchaseParam = GooglePlayPurchaseParam(
-                      //     productDetails: productDetails,
-                      //     changeSubscriptionParam: (oldSubscription != null)
-                      //         ? ChangeSubscriptionParam(
-                      //             oldPurchaseDetails: oldSubscription,
-                      //             prorationMode:
-                      //                 ProrationMode.immediateWithTimeProration,
-                      //           )
-                      //         : null);
+                      final GooglePlayPurchaseDetails? oldSubscription =
+                          _getOldSubscription(productDetails, purchases);
+
+                      purchaseParam = GooglePlayPurchaseParam(
+                          productDetails: productDetails,
+                          changeSubscriptionParam: (oldSubscription != null)
+                              ? ChangeSubscriptionParam(
+                                  oldPurchaseDetails: oldSubscription,
+                                  prorationMode:
+                                      ProrationMode.immediateWithTimeProration,
+                                )
+                              : null);
                     } else {
                       purchaseParam = PurchaseParam(
                         productDetails: productDetails,
