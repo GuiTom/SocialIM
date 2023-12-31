@@ -30,7 +30,7 @@ class _State extends State<DeveloperOptionsPage> {
         child: Container(
           alignment: AlignmentDirectional.center,
           height: 300,
-          color:Colors.white,
+          color: Colors.white,
           child: ListView.separated(
               itemBuilder: (BuildContext context, int index) {
                 return _buildListItem(index);
@@ -66,37 +66,49 @@ class _State extends State<DeveloperOptionsPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(_data[index]),
-          content: Container(
-            height: 200,
-            width: 200,
-            color: Colors.white,
-            child: Center(
-              child: ListView.builder(
-                itemBuilder: (BuildContext context, int index) {
-                  return InkWell(
-                    onTap: () {
-                      PrefsHelper.setBool('server_env_is_debug', index == 0);
-                      ToastUtil.showCenter(msg: '已经切换为${index==0?"测试环境":"生产环境"}');
-                    },
-                    child: Container(
-                      padding: const EdgeInsetsDirectional.all(3),
-                      color:
-                          (PrefsHelper.getBool('server_env_is_debug', true) ==
-                              (index == 0))
+          content: StatefulBuilder(
+            builder: (BuildContext context,
+                void Function(void Function()) setState) {
+              return Container(
+                height: 200,
+                width: 200,
+                color: Colors.white,
+                child: Center(
+                  child: ListView.builder(
+                    itemBuilder: (BuildContext context, int index) {
+                      return InkWell(
+                        onTap: () {
+                          PrefsHelper.setBool(
+                              'server_env_is_debug', index == 0);
+                          ToastUtil.showCenter(
+                              msg: '已经切换为${index == 0 ? "测试环境" : "生产环境"}');
+                          setState(() {});
+                        },
+                        child: Container(
+                          padding: const EdgeInsetsDirectional.all(3),
+                          color: (PrefsHelper.getBool(
+                                      'server_env_is_debug', true) ==
+                                  (index == 0))
                               ? Colors.green
                               : Colors.grey,
-                      height: 30,
-                      child: Text(index == 0 ? '测试环境' : '生产环境'),
-                    ),
-                  );
-                },
-                itemCount: 2,
-              ),
-            ),
+                          height: 30,
+                          child: Text(index == 0 ? '测试环境' : '生产环境'),
+                        ),
+                      );
+                    },
+                    itemCount: 2,
+                  ),
+                ),
+              );
+            },
           ),
+          actions: [
+           TextButton(onPressed: (){
+             Navigator.pop(context);
+           }, child: const Center(child: Text('确定'))),
+          ],
         );
       },
     );
   }
 }
-

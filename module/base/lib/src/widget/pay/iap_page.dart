@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:base/base.dart';
 import 'package:base/src/widget/pay/pay_api.dart';
@@ -10,6 +11,7 @@ import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:in_app_purchase_storekit/store_kit_wrappers.dart';
 
 import '../../locale/k.dart';
+import '../../protobuf/generated/iap_product.pb.dart';
 
 // const String _kConsumableId = 'com.gamepark.cc.ios.goldcoin';
 // const String _kUpgradeId = 'com.gamepark.cc.ios.crown';
@@ -20,12 +22,11 @@ const String _kUpgradeId = 'com.gamepark.cc.android.crown';
 const String _kSilverSubscriptionId = 'com.gamepark.cc.android.month_vip';
 const String _kGoldSubscriptionId = 'pd12356';
 final bool _kAutoConsume = Platform.isIOS || true;
-
-const List<String> _kProductIds = <String>[
-  _kConsumableId,
-  _kUpgradeId,
-  _kSilverSubscriptionId,
-  _kGoldSubscriptionId,
+ List<String> _productIds = <String>[
+  // _kConsumableId,
+  // _kUpgradeId,
+  // _kSilverSubscriptionId,
+  // _kGoldSubscriptionId,
 ];
 
 class IAPPage extends StatefulWidget {
@@ -95,8 +96,13 @@ class _IAPPageState extends State<IAPPage> {
       await iosPlatformAddition.setDelegate(ExamplePaymentQueueDelegate());
     }
 
+    IapProductListResp? resp =await PayAPI.getIapProducts(Platform.isIOS?'appstore':"google_play");
+    if(resp?.code==1){
+      List<String> list = resp!.data.map((e) => e.productId).toList();
+        _productIds.addAll(list);
+    }
     final ProductDetailsResponse productDetailResponse =
-        await _inAppPurchase.queryProductDetails(_kProductIds.toSet());
+        await _inAppPurchase.queryProductDetails(_productIds.toSet());
     if (productDetailResponse.error != null) {
       setState(() {
         _queryProductError = productDetailResponse.error!.message;
@@ -183,13 +189,13 @@ class _IAPPageState extends State<IAPPage> {
       );
     }
 
-    return  Scaffold(
-        appBar: AppBar(
-          title: const Text('IAP Example'),
-        ),
-        body: Stack(
-          children: stack,
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('IAP Example'),
+      ),
+      body: Stack(
+        children: stack,
+      ),
     );
   }
 
@@ -202,8 +208,8 @@ class _IAPPageState extends State<IAPPage> {
           color: _isAvailable
               ? Colors.green
               : ThemeData.light().colorScheme.error),
-      title:
-          Text(K.getTranslation(_isAvailable? 'store_available':'store_unavailable')),
+      title: Text(K.getTranslation(
+          _isAvailable ? 'store_available' : 'store_unavailable')),
     );
     final List<Widget> children = <Widget>[storeHeader];
 
@@ -245,17 +251,16 @@ class _IAPPageState extends State<IAPPage> {
     // In your app you should always verify the purchase data using the `verificationData` inside the [PurchaseDetails] object before trusting it.
     // We recommend that you use your own server to verify the purchase data.
     final Map<String, PurchaseDetails> purchases =
-    Map<String, PurchaseDetails>.fromEntries(
-        _purchases.map((PurchaseDetails purchase) {
-          if (purchase.pendingCompletePurchase) {
-            _inAppPurchase.completePurchase(purchase);
-          }
-          return MapEntry<String, PurchaseDetails>(purchase.productID, purchase);
-        }));
+        Map<String, PurchaseDetails>.fromEntries(
+            _purchases.map((PurchaseDetails purchase) {
+      if (purchase.pendingCompletePurchase) {
+        _inAppPurchase.completePurchase(purchase);
+      }
+      return MapEntry<String, PurchaseDetails>(purchase.productID, purchase);
+    }));
     productList.addAll(_products.map(
       (ProductDetails productDetails) {
-
-        bool enabled =  true;
+        bool enabled = true;
         if (productDetails?.id == _kSilverSubscriptionId) {
           if (Session.monthlyVipExpireDate.isAfter(DateTime.now())) {
             enabled = false;
@@ -291,7 +296,6 @@ class _IAPPageState extends State<IAPPage> {
                     if (Platform.isAndroid) {
                       final GooglePlayPurchaseDetails? oldSubscription =
                           _getOldSubscription(productDetails, purchases);
-
                       purchaseParam = GooglePlayPurchaseParam(
                           productDetails: productDetails,
                           changeSubscriptionParam: (oldSubscription != null)
@@ -413,7 +417,34 @@ class _IAPPageState extends State<IAPPage> {
         setState(() {});
         return true;
       }
-    } else {}
+    } else if (purchaseDetails.verificationData.source == 'google_play') {
+      Map<String,dynamic> data = jsonDecode((purchaseDetails as GooglePlayPurchaseDetails).verificationData.localVerificationData);
+      String package = data['packageName'];
+      String purchaseToken = data['purchaseToken'];
+      String orderId = data['orderId'];
+      String productId = data['productId'];
+
+      Resp? resp = await PayAPI.googlePlayVerify(
+          package: package,
+          orderId: orderId,
+          productId: productId,
+          purchaseToken: purchaseToken);
+      if (resp?.code == 1 ?? false) {
+        if (purchaseDetails.productID == _kConsumableId) {
+          Session.coin = Session.userInfo.coin + 100;
+        } else if (purchaseDetails.productID == _kUpgradeId) {
+          Session.hasCrown = true;
+        } else if (purchaseDetails.productID == _kSilverSubscriptionId) {
+          Session.monthlyVipExpireAt =
+              TimeUtil.addOneMonth(DateTime.now()).second;
+        } else if (purchaseDetails.productID == _kGoldSubscriptionId) {
+          Session.yearlyVipExpireAt =
+              TimeUtil.addOneYear(DateTime.now()).second;
+        }
+        setState(() {});
+        return true;
+      }
+    }
 
     return Future<bool>.value(true);
   }

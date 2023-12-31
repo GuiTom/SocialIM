@@ -37,7 +37,7 @@ main(List<String>? args) async {
 
     List<Directory> modules = [pwd];
 
-    Directory baseDir = Directory(p.join(pwd.path, 'banban_base'));
+    Directory baseDir = Directory(p.join(pwd.path, 'base'));
 
     Iterable<Directory> subModules = baseDir.listSync().where((e) => e is Directory).cast();
     subModules.forEach((dir) {
