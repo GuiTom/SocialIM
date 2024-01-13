@@ -82,7 +82,7 @@ class FansSubPageState extends State<FansSubPage>
       onTap: () {
         IProfileRouter profileRouter = RouterManager.instance
             .getModuleRouter(ModuleType.Profile) as IProfileRouter;
-        profileRouter.toProfilePage(
+        profileRouter.toOtherProfilePage(
             uid: item.id.toInt(), isSelf: Session.uid == item.id.toInt());
       },
       onLongPressStart: (LongPressStartDetails details) {

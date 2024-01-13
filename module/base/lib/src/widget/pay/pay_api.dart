@@ -47,7 +47,7 @@ class PayAPI {
       'package': package,
       'orderId': orderId,
       'productId': productId,
-      'purchaseToken':purchaseToken
+      'purchase Token':purchaseToken
     };
 
     Resp resp = await Net.post(

@@ -87,7 +87,7 @@ class FocusSubpageState extends State<FocusSubpage>
     return GestureDetector(
       onTap: () {
         IProfileRouter profileRouter = RouterManager.instance.getModuleRouter(ModuleType.Profile) as IProfileRouter;
-        profileRouter.toProfilePage(uid:item.id.toInt(),isSelf:Session.uid == item.id.toInt());
+        profileRouter.toOtherProfilePage(uid:item.id.toInt(),isSelf:Session.uid == item.id.toInt());
       },
       onLongPressStart: (LongPressStartDetails details) {
         _selectedRow = index;

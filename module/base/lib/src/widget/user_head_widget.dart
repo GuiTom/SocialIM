@@ -9,9 +9,9 @@ class UserHeadWidget extends StatelessWidget {
   final double size;
   final bool? isMale;
   final int? uid;
-  bool useCache = true;
 
-  UserHeadWidget(
+
+  const UserHeadWidget(
       {super.key,
       required this.imageUrl,
       required this.size,
@@ -38,7 +38,7 @@ class UserHeadWidget extends StatelessWidget {
       child = InkWell(
         onTap: () {
           IProfileRouter profileRouter = RouterManager.instance.getModuleRouter(ModuleType.Profile) as IProfileRouter;
-          profileRouter.toProfilePage(uid:uid!,isSelf:Session.uid == uid);
+          profileRouter.toOtherProfilePage(uid:uid!,isSelf:Session.uid == uid);
         },
         child: child,
       );

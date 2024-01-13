@@ -11,15 +11,15 @@ import 'package:profile/src/profile_edit_page.dart';
 import 'package:profile/src/setting_page.dart';
 import 'package:profile/src/widget/profile_middle_list_widget.dart';
 
-class ProfilePage extends StatefulWidget {
+class OtherProfilePage extends StatefulWidget {
   static Future show(BuildContext context, int? uid, User? user) {
     return Navigator.of(context).push(
       MaterialPageRoute<bool>(
-        builder: (context) => ProfilePage(
+        builder: (context) => OtherProfilePage(
           uid: uid,
           user: user,
         ),
-        settings: const RouteSettings(name: '/ProfilePage'),
+        settings: const RouteSettings(name: '/OtherProfilePage'),
       ),
     );
   }
@@ -27,11 +27,7 @@ class ProfilePage extends StatefulWidget {
   final User? user;
   final int? uid;
 
-  const ProfilePage({
-    super.key,
-    this.user,
-    this.uid,
-  });
+  const OtherProfilePage({super.key, this.user, this.uid});
 
   @override
   State<StatefulWidget> createState() {
@@ -39,7 +35,7 @@ class ProfilePage extends StatefulWidget {
   }
 }
 
-class _State extends State<ProfilePage> {
+class _State extends State<OtherProfilePage> {
   User? _user;
   bool _loading = true;
   int? _uid;
@@ -49,7 +45,7 @@ class _State extends State<ProfilePage> {
     super.initState();
     _uid = widget.uid;
 
-    _user = widget.user ?? Session.userInfo;
+    _user = widget.user;
 
     if (_user == null && _uid! > 0) {
       _loadUserInfo();
@@ -76,18 +72,7 @@ class _State extends State<ProfilePage> {
     if (_loading) {
       return const Loading();
     }
-    if (Session.uid == 0) {
-      return ThrottleInkWell(
-        onTap: () async {},
-        child: Center(
-          child: Text(
-            K.getTranslation('please_login'),
-            style: const TextStyle(
-                color: Color(0x3F111111), fontWeight: FontWeight.bold),
-          ),
-        ),
-      );
-    }
+
     return Scaffold(
         appBar: AppBar(
           title: Text(
@@ -100,27 +85,12 @@ class _State extends State<ProfilePage> {
                 color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
           ),
           actions: [
-            ThrottleInkWell(
-              onTap: () {
-                SettingPage.show(context);
-              },
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(end: 12),
-                child: SvgPicture.asset(
-                  'assets/icon_setting.svg',
-                  package: 'profile',
-                  width: 24,
-                  height: 24,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            ThrottleInkWell(
-              onTap: () {
-                showIOSActionSheet(context);
-              },
-              child: const Icon(Icons.more_horiz_outlined),
-            )
+              ThrottleInkWell(
+                onTap: () {
+                  showIOSActionSheet(context);
+                },
+                child: const Icon(Icons.more_horiz_outlined),
+              )
           ],
         ),
         body: SafeArea(
@@ -137,16 +107,16 @@ class _State extends State<ProfilePage> {
                   const SizedBox(
                     height: 30,
                   ),
-                  _buildContactsEntranceRow(),
+
                   const SizedBox(
                     height: 30,
                   ),
                   _buildUserLevelInfoRow(),
-                  _buildOtherCloumns(),
+
                   const SizedBox(
                     height: 30,
                   ),
-                  _buildChatEntrancesWideget(),
+                 _buildChatEntrancesWideget(),
                   const SizedBox(height: 20),
                 ],
               );
@@ -204,78 +174,6 @@ class _State extends State<ProfilePage> {
     );
   }
 
-  Widget _buildContactsEntranceRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        K.getTranslation('friends'),
-        K.getTranslation('fans'),
-        K.getTranslation('my_focus'),
-        K.getTranslation('dynamics'),
-      ]
-          .mapIndexed(
-            (i, e) => InkWell(
-              onTap: () async {
-                if (e != K.getTranslation('dynamics')) {
-                  IContactsRouter relastionshipRouter = RouterManager.instance
-                      .getModuleRouter(ModuleType.Contacts) as IContactsRouter;
-                  await relastionshipRouter.toContactsPage(tabIndex: i);
-                } else {
-                  IDiscoverRouter discoverRouter = RouterManager.instance
-                      .getModuleRouter(ModuleType.Discover) as IDiscoverRouter;
-                  discoverRouter.toMyDiscoverPage();
-                }
-                setState(() {});
-              },
-              child: Column(
-                children: [
-                  Text(
-                    [
-                      Session.friendList.length,
-                      Session.fansList.length,
-                      Session.focusList.length,
-                      Session.userInfo.worksCount,
-                    ][i]
-                        .toString(),
-                    style: const TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                  Text(
-                    e,
-                    style: const TextStyle(color: Color(0xFF919191)),
-                  ),
-                ],
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
-
-  Widget _buildOtherCloumns() {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      margin:
-          const EdgeInsetsDirectional.symmetric(horizontal: 6, vertical: 18),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x1F111111),
-              offset: Offset(1, 3),
-              blurRadius: 2,
-              spreadRadius: 2,
-            ),
-          ]),
-      child: const ColoredBox(
-        color: Color(0xFFF3F3F3),
-        child: ProfileMiddleListWidget(),
-      ),
-    );
-  }
 
   Widget _buildUserHeadRow(BoxConstraints constrant) {
     return Row(
@@ -288,26 +186,6 @@ class _State extends State<ProfilePage> {
               imageUrl: Util.getHeadIconUrl(_user!.id.toInt()),
               size: 80,
               isMale: _user!.sex == 1,
-            ),
-            ThrottleInkWell(
-              onTap: () async {
-                await ProfileEditPage.show(context);
-                _user = Session.userInfo;
-
-                setState(() {});
-              },
-              child: Container(
-                padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: 5, vertical: 3),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  color: Colors.purple[100],
-                ),
-                child: Text(
-                  K.getTranslation('profile_edit'),
-                  style: const TextStyle(color: Colors.black, fontSize: 12),
-                ),
-              ),
             ),
           ],
         ),
@@ -467,9 +345,9 @@ class _State extends State<ProfilePage> {
 
   Widget _buildFortuneLevelWidget() {
     return GestureDetector(
-      onTap: () {
+      onTap: (){
         // if(Platform.isIOS) {
-        IAPPage.show(context);
+        //   IAPPage.show(context);
         // }
       },
       child: Container(
@@ -496,9 +374,7 @@ class _State extends State<ProfilePage> {
             Text(
               '${_user!.coin}',
               style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600),
+                  color: Colors.black, fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ],
         ),

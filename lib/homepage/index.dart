@@ -116,7 +116,7 @@ class HomeIndexPageState extends State<StatefulWidget> {
       onTap: () {
         IProfileRouter profileRouter = (RouterManager.instance
             .getModuleRouter(ModuleType.Profile) as IProfileRouter)!;
-        profileRouter.toProfilePage(user: item.data, isSelf: false);
+        profileRouter.toOtherProfilePage(user: item.data, isSelf: false);
       },
       child: Container(
         height: 80,
