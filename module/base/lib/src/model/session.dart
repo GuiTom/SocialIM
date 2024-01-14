@@ -137,7 +137,14 @@ class Session {
     userInfo.passwordSetted = setted;
     _sync();
   }
+  static set covers(String covers) {
+    userInfo.covers = covers;
+    _sync();
+  }
+  static String get covers {
+    return userInfo.covers;
 
+  }
   static String getValue(String key) {
     return PrefsHelper.getValue(key, '');
   }

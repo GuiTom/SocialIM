@@ -15,6 +15,7 @@ import 'package:image/image.dart' as Img;
 
 enum EditItemType {
   userHeader,
+  covers,
   nickName,
   userId,
   sex,
@@ -48,6 +49,7 @@ class ProfileEditPage extends StatefulWidget {
 class _State extends State<ProfileEditPage> {
   final List<Map<String, dynamic>> _datas = [
     {'name': K.getTranslation('user_head'), 'type': EditItemType.userHeader},
+    {'name': K.getTranslation('covers'), 'type': EditItemType.covers},
     {'name': K.getTranslation('nickname'), 'type': EditItemType.nickName},
     {'name': K.getTranslation('user_id'), 'type': EditItemType.userId},
     {'name': K.getTranslation('gender'), 'type': EditItemType.sex},
@@ -101,6 +103,8 @@ class _State extends State<ProfileEditPage> {
     late Widget child;
     if (data['type'] == EditItemType.userHeader) {
       child = _buildUserHeadItem();
+    }else if (data['type'] == EditItemType.covers) {
+      child = _buildCoversItem();
     } else if (data['type'] == EditItemType.nickName) {
       child = _buildNickNameItem();
     } else if (data['type'] == EditItemType.userId) {
@@ -200,7 +204,46 @@ class _State extends State<ProfileEditPage> {
       ),
     );
   }
+  Widget _buildCoversItem() {
+    return ThrottleInkWell(
+      onTap: () async {
+        final imagePicker = ImagePicker();
+        List<XFile> pickedFiles = (await imagePicker.pickMultiImage(
+          imageQuality: 50,
+        ));
+        if (pickedFiles.isEmpty) {
+          return;
+        }
+        List<String> paths = pickedFiles.map((e) => e.path).toList();
+        UploadResp uploadResp = await Net.uploadMultiFile(
+            url: System.api('/api/upload/covers'),
+            pb: true,
+            params: {},
+            pbMsg: UploadResp.create(), filePaths: pickedFiles.map((e) => e.path).toList());
+        if (uploadResp.code == 1) {
+          if (!mounted) return;
+          ToastUtil.showCenter(
+              msg: K.getTranslation('user_covers_upload_success'));
 
+          Session.covers = paths.join(',');
+          if (!mounted) return;
+          setState(() {});
+        } else {
+          ToastUtil.showCenter(msg: uploadResp.message);
+        }
+      },
+      child: Row(
+        children: [
+          Text(K.getTranslation('covers')),
+          const Spacer(),
+           Text(Session.covers.isEmpty?K.getTranslation('not_setted'):K.getTranslation('setted')),
+          const GoNextIcon(
+            size: 36,
+          ),
+        ],
+      ),
+    );
+  }
   Widget _buildNickNameItem() {
     return ThrottleInkWell(
       onTap: () async {

@@ -20,6 +20,7 @@ class En {
     "enter_signature_length_tip":
         "Please enter a signature of no more than 20 characters",
     "user_head": "user head image",
+    "covers": "covers",
     "nickname": "nickname",
     "user_id": "user ID",
     "gender": "gender",
@@ -42,6 +43,9 @@ class En {
     "add_friend": "add friend",
     "add_focus": "follow",
     "user_head_upload_success": "Avatar uploaded successfully",
+    "user_covers_upload_success": "Cover images uploaded successfully",
+    "setted":"Setted",
+    "not_setted":"Not setted",
     "can_not_call": "can't make a call",
     "security_setting": "security setting",
     "somebody_s_profile": "the personal profile of %1",

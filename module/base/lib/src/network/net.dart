@@ -123,10 +123,10 @@ class Net {
     required String url,
     required List<String> filePaths,
     required bool pb,
-    String? fileName,
     required Map<String, dynamic> params,
     required T pbMsg,
   }) async {
+    String? fileName;
     int index = 0;
     for (String filePath in filePaths) {
       File file = File(filePath); // 替换为你要上传的文件路径
@@ -135,6 +135,7 @@ class Net {
           await MultipartFile.fromFile(file.path, filename: fileName);
       index += 1;
     }
+    params['uid'] = Session.uid;
     params['lan'] = ui.window.locale.languageCode;
     FormData formData = FormData.fromMap(params);
     try {
