@@ -163,7 +163,7 @@ class _State extends State<LoginPage> {
               phoneCompleteNumber: '$_areaCode-${_phone}',
               password: widget.usePassword ? Util.cryptPwd(_passwrod!) : null,
               smsCode: widget.usePassword ? null : _smsCode,email: _email);
-          if (resp != null) {
+          if (resp?.code==1??false) {
             //登录成功，跳首页
             if(_countryISOCode!=null) {
               Session.countryIsoCode = _countryISOCode!;
