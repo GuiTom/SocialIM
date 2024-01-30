@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:login/src/email_verify_page.dart';
+import 'package:login/src/login_api.dart';
 import 'package:login/src/phone_number_verify_page.dart';
 import './widget/prelogin_background_slide.dart';
 import 'package:base/base.dart';
@@ -10,6 +12,8 @@ import 'dart:ui' as ui;
 enum LoginButtonId {
   Phone,
   Email,
+  Google,
+  Facebook,
 }
 
 class PreLoginPage extends StatefulWidget {
@@ -63,19 +67,26 @@ class _State extends State<PreLoginPage> {
     );
   }
 
+  GoogleSignIn? _googleSign;
+
   List<Widget> _buildLoginButtons() {
     return [
       {
         'id': LoginButtonId.Email,
         'title': K.getTranslation('use_email_tologin'),
-        'textColor':Colors.white,
+        'textColor': Colors.white,
+      },
+      {
+        'id': LoginButtonId.Google,
+        'title': K.getTranslation('google_login'),
+        'textColor': Colors.white,
       },
       if (ui.window.locale.countryCode == 'CN')
         {
           'id': LoginButtonId.Phone,
-          'title': K.getTranslation('use_phone_tologin'),
-          'colors':[Colors.white,Colors.white],
-          'textColor':Colors.black,
+          'title': K.getTranslation('google_login'),
+          'colors': [Colors.white, Colors.white],
+          'textColor': Colors.black,
         },
     ]
         .mapIndexed(
@@ -85,6 +96,8 @@ class _State extends State<PreLoginPage> {
                 PhoneNumberVerifyPage.show(context);
               } else if (e['id'] == LoginButtonId.Email) {
                 EmailVerifyPage.show(context);
+              } else if (e['id'] == LoginButtonId.Google) {
+                _googleSignIn();
               }
             },
             child: Button(
@@ -105,6 +118,31 @@ class _State extends State<PreLoginPage> {
               ),
             ))
         .toList();
+  }
+
+  void _googleSignIn() async {
+    _googleSign ??= GoogleSignIn();
+    final isSigned = await _googleSign!.isSignedIn();
+    if (isSigned) {
+      await _googleSign!.signOut();
+    }
+    final googleSignInAccount = await _googleSign!.signIn();
+    if (googleSignInAccount != null) {
+
+      UserInfoResp? resp = await LoginApi.googleLogin(
+          accessToken: (await googleSignInAccount!.authentication)?.accessToken,
+          idToken: (await googleSignInAccount!.authentication)?.idToken,
+          serverAuthCode: googleSignInAccount!.serverAuthCode,
+          id: googleSignInAccount.id,
+          nickName: googleSignInAccount.displayName,
+          email:  googleSignInAccount!.email,
+          cover: googleSignInAccount.photoUrl);
+      if (resp?.code == 1) {
+        //登录成功
+        Session.userInfo = resp!.data;
+        eventCenter.emit('userInfoChanged');
+      }
+    }
   }
 // Widget _buildEulaAgreenWidget() {
 //   return EulaWidget(

@@ -41,6 +41,7 @@ class En {
     "risk_confirm":"The risks have been cleared, and it is determined to continue",
     "unregister_success_tip":"Account has been unregistered and all your data has been deleted",
     "use_phone_tologin":"login with phone number",
-    "use_email_tologin":"login with email"
+    "use_email_tologin":"login with email",
+    "google_login":"Login with google",
   };
 }

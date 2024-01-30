@@ -123,7 +123,6 @@ class _State extends State<EmailVerifyPage> {
           border: const OutlineInputBorder(
             borderSide: BorderSide(),
           ),
-
         ),
       ),
     );

@@ -58,9 +58,51 @@ class LoginApi {
     } else {
       params['code'] = smsCode;
     }
-    params['isIos'] = Constant.isIos ? 1 : 0;
     UserInfoResp resp = await Net.post(
         url: System.api("/api/user/login"),
+        pb: true,
+        params: params,
+        pbMsg: UserInfoResp.create());
+    if (resp.code == 1) {
+      return resp;
+    } else {
+      ToastUtil.showCenter(msg: resp.message);
+    }
+    return null;
+  }
+
+  static Future<UserInfoResp?> googleLogin(
+      {String? accessToken,
+      String? id,
+        String? serverAuthCode,
+        String ?idToken,
+      String? nickName,
+      String ?email,
+      String? cover}) async {
+    Map<String, dynamic> params = {};
+    if (accessToken != null) {
+      params['accessToken'] = accessToken;
+    }
+    if (serverAuthCode != null) {
+      params['serverAuthCode'] = serverAuthCode;
+    }
+    if (id != null) {
+      params['id'] = id;
+    }
+    if (email != null) {
+      params['email'] = email;
+    }
+    if (idToken != null) {
+      params['idToken'] = idToken;
+    }
+    if (nickName != null) {
+      params['nickName'] = nickName;
+    }
+    if (cover != null) {
+      params['cover'] = cover;
+    }
+    UserInfoResp resp = await Net.post(
+        url: System.api("/api/user/googlelogin"),
         pb: true,
         params: params,
         pbMsg: UserInfoResp.create());
@@ -81,8 +123,9 @@ class LoginApi {
         pbMsg: Resp.create());
     return resp;
   }
+
   static Future<Resp> getEmailCode(
-      {required String email,required String type}) async {
+      {required String email, required String type}) async {
     Resp resp = await Net.post(
         url: System.api('/api/user/getEmailCode'),
         pb: true,
@@ -103,10 +146,9 @@ class LoginApi {
         pbMsg: Resp.create());
     return resp;
   }
+
   static Future<Resp> checkEmailCode(
-      {required smsCode,
-        required email,
-        required String type}) async {
+      {required smsCode, required email, required String type}) async {
     Resp resp = await Net.post(
         url: System.api('/api/user/checkEmailCode'),
         pb: true,
@@ -114,15 +156,13 @@ class LoginApi {
         pbMsg: Resp.create());
     return resp;
   }
+
   static Future<Resp> setPassword(
       {required int uid, required String password}) async {
     Resp resp = await Net.post(
         url: System.api('/api/user/modify_password'),
         pb: true,
-        params: {
-          'uid': uid,
-          'password': Util.cryptPwd(password)
-        },
+        params: {'uid': uid, 'password': Util.cryptPwd(password)},
         pbMsg: Resp.create());
     return resp;
   }
@@ -143,6 +183,7 @@ class LoginApi {
     }
     return resp;
   }
+
   static Future<Resp> changeEmail(
       {required newEmail, required String smsCode}) async {
     Resp resp = await Net.post(
@@ -159,6 +200,7 @@ class LoginApi {
     }
     return resp;
   }
+
   static Future<Resp> unRegister({required String smsCode}) async {
     Resp resp = await Net.post(
         url: System.api('/api/user/unregister'),

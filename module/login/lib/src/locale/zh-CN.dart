@@ -40,6 +40,7 @@ class ZhCn {
     "risk_confirm": "已清楚风险，确定继续",
     "unregister_success_tip": "账号已注销，您的所有数据已经删除",
     "use_phone_tologin": "使用手机号登录",
-    "use_email_tologin": "使用邮箱登录"
+    "use_email_tologin": "使用邮箱登录",
+    "google_login":"谷歌登录",
   };
 }
