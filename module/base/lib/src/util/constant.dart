@@ -29,11 +29,11 @@ class Constant {
     }
   }
 
-  static const String debugSocketUrl = 'ws://172.20.10.4:8086/ws';
+  static const String debugSocketUrl = 'ws://192.168.1.3:8086/ws';
 
   static const String releaseSocketUrl = 'ws://13.212.217.161/ws';
 
-  static const String debugServertUrl = 'http://172.20.10.4:8080';
+  static const String debugServertUrl = 'http://192.168.1.3:8080';
 
   static const String releaseServerUrl = 'http://13.212.217.161';
   static const String agroaAppId = "0a3d1efd4a7d4ed4a057a0ee869cfcfb";

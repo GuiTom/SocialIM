@@ -224,7 +224,7 @@ class MessageSession {
     };
   }
 
-  //设置自己是否已读
+  //设置自己已读
   void setMessageReadStatus(List<SocketData> socketDatas) {
     unReadCount -= socketDatas.length;
     Constant.totalUnReadMsgCount -= socketDatas.length;

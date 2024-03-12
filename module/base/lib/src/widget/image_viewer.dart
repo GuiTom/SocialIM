@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
-class ImageViewer extends StatelessWidget {
+class ImageViewer extends StatefulWidget {
   ImageViewer({
     required this.imageUrls,
     required this.initIndex,
@@ -16,7 +16,6 @@ class ImageViewer extends StatelessWidget {
   final List<String> imageUrls;
   @override
   final int initIndex;
-
 
   static Future show(BuildContext context,
       {required List<String> imageUrls, required initIndex}) {
@@ -30,24 +29,39 @@ class ImageViewer extends StatelessWidget {
   }
 
   @override
+  State<StatefulWidget> createState() => _State();
+}
+
+class _State extends State<ImageViewer> {
+  int _currentPageIndex = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _currentPageIndex = widget.initIndex;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap:(){
+      onTap: () {
         Navigator.pop(context);
       },
-      onLongPressStart: (LongPressStartDetails details){
+      onLongPressStart: (LongPressStartDetails details) {
         print(details);
       },
       child: PhotoViewGallery.builder(
         scrollPhysics: const BouncingScrollPhysics(),
         builder: (BuildContext context, int index) {
           return PhotoViewGalleryPageOptions(
-            imageProvider: NetworkImage(imageUrls[initIndex]),
+            imageProvider: NetworkImage(widget.imageUrls[_currentPageIndex]),
             initialScale: PhotoViewComputedScale.contained,
-            heroAttributes: PhotoViewHeroAttributes(tag: imageUrls[initIndex]),
+            heroAttributes: PhotoViewHeroAttributes(
+                tag: widget.imageUrls[_currentPageIndex]),
           );
         },
-        itemCount: imageUrls.length,
+        itemCount: widget.imageUrls.length,
         loadingBuilder: (context, event) => Center(
           child: SizedBox(
             width: 40.0,
@@ -61,8 +75,9 @@ class ImageViewer extends StatelessWidget {
         ),
         // backgroundDecoration: widget.backgroundDecoration,
         pageController: PageController(),
-        onPageChanged: (int index){
-
+        onPageChanged: (int index) {
+          _currentPageIndex = index;
+          setState(() {});
         },
       ),
     );

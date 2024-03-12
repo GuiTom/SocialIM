@@ -21,7 +21,8 @@ enum MsgContentType {
   ChatRtcAudio,
   ChatRtcHandshakeChange,
   MemberEnterExit, //成员进出
-  MemberStatusChange //成员状态变化
+  MemberStatusChange, //成员状态变化
+  Customize,
 }
 
 enum Status {
