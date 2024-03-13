@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:base/base.dart';
 import 'package:flutter/cupertino.dart';
@@ -36,6 +37,7 @@ class ChatMessageItem extends StatefulWidget {
   final int playingIndex;
   final GestureTapCallback? onTap;
   final String targetName;
+
   const ChatMessageItem(
       {Key? key,
       required this.data,
@@ -43,7 +45,8 @@ class ChatMessageItem extends StatefulWidget {
       required this.onPlayerStatusChange,
       required this.playingIndex,
       required this.listIndex,
-      required this.onTap, required this.targetName})
+      required this.onTap,
+      required this.targetName})
       : super(key: key);
 
   @override
@@ -100,35 +103,70 @@ class _State extends State<ChatMessageItem> {
     if (widget.data.contentType == MsgContentType.ChatText) {
       child = ChatBubble(isLeft: isLeft, text: widget.data.message.content);
     } else if (widget.data.contentType == MsgContentType.ChatImage) {
-      String imageUrl =
-          System.file('/file/${widget.data.message.extraInfo['filePath']}');
-      int cachedWidth =
-          widget.data.message.extraInfo['imageWidth'] ?? Util.width / 4;
-      int cachedHeight = widget.data.message.extraInfo['imageHeight'] ?? 0.0;
-      double imageWidth = cachedWidth.toDouble();
+      if (!widget.data.sendBySelf) {
+        //图像上传完毕
+        String imageUrl =
+            System.file('/file/${widget.data.message.extraInfo['filePath']}');
+        int cachedWidth =
+            widget.data.message.extraInfo['imageWidth'] ?? Util.width / 4;
+        int cachedHeight = widget.data.message.extraInfo['imageHeight'] ?? 0.0;
+        double imageWidth = cachedWidth.toDouble();
 
-      double imageHeight = cachedHeight.toDouble();
-      if (imageWidth > Util.width / 4) {
-        imageHeight = imageHeight * (Util.width / 4) / imageWidth;
-        imageWidth = Util.width / 4;
+        double imageHeight = cachedHeight.toDouble();
+        if (imageWidth > Util.width / 4) {
+          imageHeight = imageHeight * (Util.width / 4) / imageWidth;
+          imageWidth = Util.width / 4;
+        }
+
+        child = ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            width: imageWidth,
+            height: imageHeight,
+            memCacheWidth: imageWidth.toInt(),
+            memCacheHeight: imageHeight.toInt(),
+            fit: BoxFit.fitWidth,
+            placeholder: (
+              BuildContext context,
+              String url,
+            ) =>
+                CupertinoActivityIndicator(
+                    radius: imageWidth * 0.5, color: Colors.white),
+          ),
+        );
+      } else if (widget.data.message.extraInfo['localPath'] != null) {
+        //图像正在上传
+        String localPath = widget.data.message.extraInfo['localPath'];
+        int cachedWidth =
+            widget.data.message.extraInfo['imageWidth'] ?? Util.width / 4;
+
+        int cachedHeight = widget.data.message.extraInfo['imageHeight'] ?? 0.0;
+        double imageWidth = cachedWidth.toDouble();
+        double imageHeight = cachedHeight.toDouble();
+        if (imageWidth > Util.width / 4) {
+          imageHeight = imageHeight * (Util.width / 4) / imageWidth;
+          imageWidth = Util.width / 4;
+        }
+        child = ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: Stack(
+            alignment: AlignmentDirectional.center,
+            children: [
+              Image.file(
+                File(localPath),
+                width: imageWidth,
+                height: imageHeight,
+              ),
+              if (widget.data.message.extraInfo['filePath'] == null)
+                CupertinoActivityIndicator(
+                    radius: imageWidth * 0.5, color: Colors.white),
+            ],
+          ),
+        );
+      }else {
+        child = Container();
       }
-      child = ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: CachedNetworkImage(
-          imageUrl: imageUrl,
-          width: imageWidth,
-          height: imageHeight,
-          memCacheWidth: imageWidth.toInt(),
-          memCacheHeight: imageHeight.toInt(),
-          fit: BoxFit.fitWidth,
-          placeholder: (
-            BuildContext context,
-            String url,
-          ) =>
-              CupertinoActivityIndicator(
-                  radius: imageWidth * 0.5, color: Colors.white),
-        ),
-      );
     } else if (widget.data.contentType == MsgContentType.ChatAudio) {
       child = ChatAudio(
         isLeft: isLeft,
@@ -152,8 +190,16 @@ class _State extends State<ChatMessageItem> {
           _handelTapAudio();
         } else if (widget.data.contentType == MsgContentType.ChatRTCVideo ||
             widget.data.contentType == MsgContentType.ChatRtcAudio) {
-          VideoCallPage.show(context, true, widget.data.sendBySelf?widget.data.targetId:widget.data.srcUid, 0,
-              widget.data.targetId==Session.uid?widget.data.message.extraInfo['senderName']:widget.targetName);
+          VideoCallPage.show(
+              context,
+              true,
+              widget.data.sendBySelf
+                  ? widget.data.targetId
+                  : widget.data.srcUid,
+              0,
+              widget.data.targetId == Session.uid
+                  ? widget.data.message.extraInfo['senderName']
+                  : widget.targetName);
         }
         widget.onTap?.call();
       },
@@ -186,10 +232,10 @@ class _State extends State<ChatMessageItem> {
         width: 6,
       ),
       if ((widget.data.contentType == MsgContentType.ChatAudio ||
-          widget.data.contentType == MsgContentType.ChatRTCVideo ||
-          widget.data.contentType == MsgContentType.ChatRtcAudio) &&
-              !widget.data.read &&
-              !widget.data.sendBySelf)
+              widget.data.contentType == MsgContentType.ChatRTCVideo ||
+              widget.data.contentType == MsgContentType.ChatRtcAudio) &&
+          !widget.data.read &&
+          !widget.data.sendBySelf)
         Padding(
           padding: const EdgeInsetsDirectional.only(top: 20),
           child: _buildUnReadFlagWidget(),

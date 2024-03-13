@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:base/base.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -450,6 +452,19 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
     int imageHeight = image!.height;
 
     CommonLoading.show();
+    int messageId = Random().nextInt(pow(2, 32).toInt());
+    var data = SocketRadio.instance.createSocketData({
+      'content': '[${K.getTranslation('picture')}]',
+      'extraInfo': {
+        'senderName': Session.userInfo.name,
+        'senderGender': Session.userInfo.sex,
+        'receiverName': widget.targetName,
+        'imageWidth': imageWidth,
+        'imageHeight': imageHeight,
+        'localPath':pickedFile!.path,
+      }
+    }, widget.targetId, TargetType.Private, MsgContentType.ChatImage,msgId: messageId);
+    eventCenter.emit("socket_message", SocketData.fromSocketBytes(data));
     UploadResp resp = await Net.uploadFile(
         url: System.api('/api/upload/chatImage'),
         filePath: pickedFile.path,
@@ -457,7 +472,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
         params: {'uid': Session.uid},
         pbMsg: UploadResp.create());
     if (resp.code == 1) {
-      SocketRadio.instance.sendMessage({
+     SocketRadio.instance.sendMessage({
         'content': '[${K.getTranslation('picture')}]',
         'extraInfo': {
           'senderName': Session.userInfo.name,
@@ -467,7 +482,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
           'imageWidth': imageWidth,
           'imageHeight': imageHeight,
         }
-      }, widget.targetId, TargetType.Private, MsgContentType.ChatImage);
+      }, widget.targetId, TargetType.Private, MsgContentType.ChatImage,msgId: messageId);
     } else {
       ToastUtil.showCenter(msg: resp.message);
     }

@@ -21,9 +21,10 @@ class MessageRouter implements IMessageRouter {
 
   @override
   void showRTCCall(
-      BuildContext context, bool isVideo, int targetUid,String senderName) {
-    VideoCallPage.show(context, isVideo,targetUid,0,senderName);
+      BuildContext context, bool isVideo, int targetUid, String senderName) {
+    VideoCallPage.show(context, isVideo, targetUid, 0, senderName);
   }
+
   @override
   void listenMessage() async {
     eventCenter.addListener('socket_message', (type, data) {
@@ -51,18 +52,22 @@ class MessageRouter implements IMessageRouter {
             sessionId: socketData.sessionId));
         //RTC握手状态改变
         if (socketData.contentType == MsgContentType.ChatRtcHandshakeChange) {
-          SocketData? primaryData =
-              session.getMessageById(socketData.message.extraInfo['targetMessageId'].toString());
+          //rtc握手
+          SocketData? primaryData = session.getMessageById(
+              socketData.message.extraInfo['targetMessageId'].toString());
           if (primaryData != null) {
             //由于本方法是async，reply消息可能先于原消息到达，此情况将到达回执先缓存起来
-            primaryData!.message.extraInfo['handshakeStatus'] = socketData!.message.extraInfo['handshakeStatus'];
-            if(socketData!.message.extraInfo['duration']!=null){
-              primaryData!.message.extraInfo['duration'] = socketData!.message.extraInfo['duration'];
+            primaryData!.message.extraInfo['handshakeStatus'] =
+                socketData!.message.extraInfo['handshakeStatus'];
+            if (socketData!.message.extraInfo['duration'] != null) {
+              primaryData!.message.extraInfo['duration'] =
+                  socketData!.message.extraInfo['duration'];
             }
             // List<SocketData> sockets = await session.messages;
             int res = await DatabaseHelper.instance.updateMessage(primaryData);
             dog.d('res:$res');
-            eventCenter.emit('HandshakeChangeMessageReceived',[socketData,primaryData]);
+            eventCenter.emit(
+                'HandshakeChangeMessageReceived', [socketData, primaryData]);
           }
         } else if (socketData.contentType == MsgContentType.Recipt) {
           // dog.d('socketData ->reply:${socketData}');
@@ -74,18 +79,31 @@ class MessageRouter implements IMessageRouter {
             int res = await DatabaseHelper.instance
                 .updateMessage(primaryData, {'status': Status.reached.index});
             dog.d('res:$res');
-            eventCenter.emit('messageReceived',socketData);
+            eventCenter.emit('messageReceived', socketData);
           }
         } else {
           if (socketData.targetId == Session.uid) {
             session.sessionName = socketData.sessionName;
             session.peerGender = socketData.peerGender;
           }
+          if (socketData.contentType == MsgContentType.ChatImage ||
+              socketData.contentType == MsgContentType.ChatAudio) {
+            if (socketData.sendBySelf &&
+                socketData.message.extraInfo["localPath"] == null) {//图像上传成功
+              SocketData? primaryData =
+                  session.getMessageById(socketData.messageId.toString());
+              primaryData?.message.extraInfo['filePath'] =
+                  socketData.message.extraInfo["filePath"];
+              eventCenter.emit('messageReceived', socketData);
+              return;
+            }
+          }
           await session.insertMessage(socketData);
           dog.d('socketData ->send:${socketData}');
           if (socketData.contentType == MsgContentType.ChatRTCVideo ||
               socketData.contentType == MsgContentType.ChatRtcAudio) {
-            if (socketData.targetId == Session.uid&&socketData.message.extraInfo['handshakeStatus']==null) {
+            if (socketData.targetId == Session.uid &&
+                socketData.message.extraInfo['handshakeStatus'] == null) {
               VideoCallPage.show(
                 Constant.context,
                 socketData.contentType == MsgContentType.ChatRTCVideo,

@@ -93,6 +93,19 @@ class SocketRadio {
   Timer? _timer;
   //targetType 1,普通用户,2。群组，房间等
  Future<int> sendMessage(Map message, int targetId, TargetType targetType,MsgContentType contentType,{int? msgId}) async{
+
+    if (_webSocket?.readyState != WebSocket.open) {
+     await connect(Constant.socketUrl);
+    }
+    int messageId = msgId??Random().nextInt(pow(2, 32).toInt());
+    var data = createSocketData(message, targetId, targetType, contentType,msgId: messageId);
+    _webSocket?.add(data);
+    if(targetType==TargetType.Private) {
+      eventCenter.emit("socket_message", SocketData.fromSocketBytes(data));
+    }
+    return messageId;
+  }
+  List<int> createSocketData(Map message, int targetId, TargetType targetType,MsgContentType contentType,{int? msgId}){
     DateTime now = DateTime.now();
     int timestamp = now.millisecondsSinceEpoch;
     String messageStr = TypeUtil.parseString(message);
@@ -105,18 +118,10 @@ class SocketRadio {
     int types = (targetType.index<<4&0xF0)|(contentType.index&0xF);
     head.setInt8(12, types);
     head.setInt64(13, timestamp);
-    int messageId = msgId??Random().nextInt(pow(2, 32).toInt());
-    head.setUint32(21, messageId);
+    head.setUint32(21, msgId!);
     var data = head.buffer.asUint8List(0, head.lengthInBytes).cast<int>() +
         body.toList();
-    if (_webSocket?.readyState != WebSocket.open) {
-     await connect(Constant.socketUrl);
-    }
-    _webSocket?.add(data);
-    if(targetType==TargetType.Private) {
-      eventCenter.emit("socket_message", SocketData.fromSocketBytes(data));
-    }
-    return messageId;
+    return data;
   }
 
   //targetType 1,普通用户,2。群组，房间等
