@@ -115,6 +115,7 @@ class _State extends State<ProfilePage> {
                 ),
               ),
             ),
+            if(_user!=null&&_user!.id.toInt()!=Session.uid)
             ThrottleInkWell(
               onTap: () {
                 showIOSActionSheet(context);
