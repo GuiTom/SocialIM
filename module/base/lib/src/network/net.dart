@@ -59,6 +59,9 @@ class Net {
         } else if (error.type == DioErrorType.receiveTimeout) {
           ToastUtil.showCenter(
               msg: K.getTranslation('netowrk_response_timeout'));
+        }else {
+          ToastUtil.showCenter(
+              msg: error.message);
         }
       }
       dog.d('url:$url=>$error');
