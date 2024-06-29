@@ -37,7 +37,6 @@ class _State extends State<ImageViewer> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _currentPageIndex = widget.initIndex;
   }

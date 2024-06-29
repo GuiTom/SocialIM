@@ -157,6 +157,14 @@ class MessageSession {
     eventCenter.emit('messageAded', data);
     eventCenter.emit('unReadCountChange');
   }
+  Future upadteMessage(SocketData data) async {
+
+
+    int r = await DatabaseHelper.instance.updateSession(this);
+   var res = await DatabaseHelper.instance.updateMessage(data);
+    _messageMap[data.messageId.toString()] = data;
+
+  }
 
   Future deleteMessage(SocketData data) async {
     msgCount -= 1;
@@ -164,10 +172,7 @@ class MessageSession {
       unReadCount -= 1;
 
       Constant.totalUnReadMsgCount -= 1;
-      // if(unReadCount<0){
-      //   unReadCount = 0;
-      // }
-      // if (Constant.totalUnReadMsgCount < 0) Constant.totalUnReadMsgCount = 0;
+
       eventCenter.emit('unReadCountChange');
     }
     if (data == _messages.last) {

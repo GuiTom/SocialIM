@@ -254,25 +254,49 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
       behavior: HitTestBehavior.translucent,
       onLongPress: () async {
         // dog.d('on-LongPress:onLongPress');
+        int messageId = Random().nextInt(pow(2, 32).toInt());
         RecorderOverlay.show(context, (recordDetail) async {
+          var data = SocketRadio.instance.createSocketData({
+            'content': '[${K.getTranslation('voice')}]',
+            'extraInfo': {
+              'senderName': Session.userInfo.name,
+              'senderGender': Session.userInfo.sex,
+              'receiverName': widget.targetName,
+              'localPath': recordDetail['localPath'],
+              'duration': recordDetail['duration'],
+            }
+          }, widget.targetId, TargetType.Private, MsgContentType.ChatAudio,
+              msgId: messageId);
+          SocketData socketData = SocketData.fromSocketBytes(data)
+            ..sendStatus = Status.sending;
+          _messgaeSession
+              ?.insertMessage(socketData..sendStatus = Status.sending);
+
+          // eventCenter.emit(`socket_message`, socketData);
+          _messageUpdated('', Object());
           dog.d('recordDetail:$recordDetail');
           UploadResp resp = await Net.uploadFile(
               url: System.api('/api/upload/chatAudio'),
-              filePath: recordDetail['filePath'],
+              filePath: recordDetail['localPath'],
               pb: true,
               params: {'uid': Session.uid},
               pbMsg: UploadResp.create());
           if (resp.code == 1) {
-            SocketRadio.instance.sendMessage({
+            socketData.originData = SocketRadio.instance.createSocketData({
               'content': '[${K.getTranslation('voice')}]',
               'extraInfo': {
                 'senderName': Session.userInfo.name,
                 'senderGender': Session.userInfo.sex,
                 'receiverName': widget.targetName,
-                'filePath': resp.filePath,
                 'duration': recordDetail['duration'],
+                'serverFilePath':resp.filePath
               }
-            }, widget.targetId, TargetType.Private, MsgContentType.ChatAudio);
+            }, widget.targetId, TargetType.Private, MsgContentType.ChatAudio,
+                msgId: messageId);
+            SocketRadio.instance.sendMessage(socketData);
+            _messgaeSession
+                ?.upadteMessage(socketData..sendStatus = Status.reached);
+            _messageUpdated('', Object());
           } else {
             ToastUtil.showCenter(msg: resp.message);
           }
@@ -308,17 +332,25 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
     if (Platform.isIOS) {
       FocusScope.of(context).requestFocus(_focusNode);
     }
-    SocketRadio.instance.sendMessage({
-      'content': keyword,
-      'extraInfo': {
-        'senderName': Session.userInfo.name,
-        'senderGender': Session.userInfo.sex,
-        'receiverName': widget.targetName
-      }
-    }, widget.targetId, TargetType.Private, MsgContentType.ChatText);
-    _textController.clear();
-    _showEmojiPanel = false;
-    setState(() {});
+
+    int messageId = Random().nextInt(pow(2, 32).toInt());
+    RecorderOverlay.show(context, (recordDetail) async {
+      var data = SocketRadio.instance.createSocketData({
+        'content': keyword,
+        'extraInfo': {
+          'senderName': Session.userInfo.name,
+          'senderGender': Session.userInfo.sex,
+          'receiverName': widget.targetName
+        }
+      }, widget.targetId, TargetType.Private, MsgContentType.ChatText,
+          msgId: messageId);
+      SocketData socketData = SocketData.fromSocketBytes(data);
+      SocketRadio.instance.sendMessage(socketData);
+      _messgaeSession!.insertMessage(socketData);
+      _textController.clear();
+      _showEmojiPanel = false;
+      setState(() {});
+    });
   }
 
   Widget _renderBottomToolButtons() {
@@ -461,10 +493,14 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
         'receiverName': widget.targetName,
         'imageWidth': imageWidth,
         'imageHeight': imageHeight,
-        'localPath':pickedFile!.path,
+        'localPath': pickedFile!.path,
       }
-    }, widget.targetId, TargetType.Private, MsgContentType.ChatImage,msgId: messageId);
-    eventCenter.emit("socket_message", SocketData.fromSocketBytes(data));
+    }, widget.targetId, TargetType.Private, MsgContentType.ChatImage,
+        msgId: messageId);
+    SocketData socketData = SocketData.fromSocketBytes(data);
+    // eventCenter.emit("socket_message", socketData);
+    _messageUpdated("", Object());
+    _messgaeSession!.insertMessage(socketData..sendStatus = Status.sending);
     UploadResp resp = await Net.uploadFile(
         url: System.api('/api/upload/chatImage'),
         filePath: pickedFile.path,
@@ -472,17 +508,21 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
         params: {'uid': Session.uid},
         pbMsg: UploadResp.create());
     if (resp.code == 1) {
-     SocketRadio.instance.sendMessage({
-        'content': '[${K.getTranslation('picture')}]',
+      socketData.message.extraInfo['serverFilePath'] = resp.filePath;
+      socketData.originData = SocketRadio.instance.createSocketData({
+        'content': '[${K.getTranslation('voice')}]',
         'extraInfo': {
           'senderName': Session.userInfo.name,
           'senderGender': Session.userInfo.sex,
           'receiverName': widget.targetName,
-          'filePath': resp.filePath,
-          'imageWidth': imageWidth,
-          'imageHeight': imageHeight,
+          'serverFilePath':resp.filePath
         }
-      }, widget.targetId, TargetType.Private, MsgContentType.ChatImage,msgId: messageId);
+      }, widget.targetId, TargetType.Private, MsgContentType.ChatImage,
+          msgId: messageId);
+      socketData.sendStatus = Status.reached;
+
+      SocketRadio.instance.sendMessage(socketData);
+      _messgaeSession!.upadteMessage(socketData..sendStatus = Status.reached);
     } else {
       ToastUtil.showCenter(msg: resp.message);
     }

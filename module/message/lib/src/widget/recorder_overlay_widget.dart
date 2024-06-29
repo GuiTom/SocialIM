@@ -248,7 +248,7 @@ class _RecorderVoiceState extends State<_RecorderVoiceWidget> {
     int durationInMillSecs = await _stopRecord();
     if (durationInMillSecs > 0) {
       widget.onRecordCompleted!(
-          {'filePath': _recordingPath, 'duration': durationInMillSecs});
+          {'localPath': _recordingPath, 'duration': durationInMillSecs});
       return durationInMillSecs;
     }
     return -1;

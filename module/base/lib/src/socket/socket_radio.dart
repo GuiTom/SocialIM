@@ -61,8 +61,7 @@ class SocketRadio {
   }
   void _onData(data) {
     // dog.i('$socketName _receivePackages message:$message', tag: LOG_TAG);
-    if (data is List<int>) {
-          SocketData socketData = SocketData.fromSocketBytes(data);
+    if (data is List<int>) {          SocketData socketData = SocketData.fromSocketBytes(data);
           eventCenter.emit("socket_message", socketData);
     }
   }
@@ -92,18 +91,15 @@ class SocketRadio {
 
   Timer? _timer;
   //targetType 1,普通用户,2。群组，房间等
- Future<int> sendMessage(Map message, int targetId, TargetType targetType,MsgContentType contentType,{int? msgId}) async{
+ Future<SocketData> sendMessage(SocketData data) async{
 
     if (_webSocket?.readyState != WebSocket.open) {
      await connect(Constant.socketUrl);
     }
-    int messageId = msgId??Random().nextInt(pow(2, 32).toInt());
-    var data = createSocketData(message, targetId, targetType, contentType,msgId: messageId);
-    _webSocket?.add(data);
-    if(targetType==TargetType.Private) {
-      eventCenter.emit("socket_message", SocketData.fromSocketBytes(data));
-    }
-    return messageId;
+
+    _webSocket?.add(data.originData!);
+
+    return data;
   }
   List<int> createSocketData(Map message, int targetId, TargetType targetType,MsgContentType contentType,{int? msgId}){
     DateTime now = DateTime.now();

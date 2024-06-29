@@ -74,7 +74,7 @@ class MessageRouter implements IMessageRouter {
           SocketData? primaryData =
               session.getMessageById(socketData.messageId.toString());
           if (primaryData != null) {
-            primaryData!.status = Status.reached;
+            primaryData!.sendStatus = Status.reached;
             // List<SocketData> sockets = await session.messages;
             int res = await DatabaseHelper.instance
                 .updateMessage(primaryData, {'status': Status.reached.index});
@@ -92,8 +92,8 @@ class MessageRouter implements IMessageRouter {
                 socketData.message.extraInfo["localPath"] == null) {//图像上传成功
               SocketData? primaryData =
                   session.getMessageById(socketData.messageId.toString());
-              primaryData?.message.extraInfo['filePath'] =
-                  socketData.message.extraInfo["filePath"];
+              primaryData?.message.extraInfo['serverFilePath'] =
+                  socketData.message.extraInfo["serverFilePath"];
               eventCenter.emit('messageReceived', socketData);
               return;
             }

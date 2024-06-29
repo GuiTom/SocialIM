@@ -100,10 +100,10 @@ class _State extends State<LiveRoomInputBar> {
     if (Platform.isIOS) {
       FocusScope.of(Constant.context).requestFocus(_focusNode);
     }
-    SocketRadio.instance.sendMessage(
-        {'type': MsgContentType.ChatText.index, 'content': keyword},
-        widget.targetId,
-        TargetType.LiveRoom,MsgContentType.ChatText);
+    // SocketRadio.instance.sendMessage(
+    //     {'type': MsgContentType.ChatText.index, 'content': keyword},
+    //     widget.targetId,
+    //     TargetType.LiveRoom,MsgContentType.ChatText);
     _clearInput();
   }
 

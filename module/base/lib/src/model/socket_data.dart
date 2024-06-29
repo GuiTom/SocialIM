@@ -75,22 +75,22 @@ class SocketData {
       required this.targetType,
         required this.contentType,
       required this.message,
-      required this.status,
+      required this.sendStatus,
       required this.read,
-      required this.createAt});
+      required this.createAt, this.originData});
   final MsgContentType contentType;
   bool read = false; //是否已经被自己阅读
-  Status status = Status.sending; //0,正在发送 1.已送达 2.已超时 3.对方已读
+  Status sendStatus = Status.sending; //0,正在发送 1.已送达 2.已超时 3.对方已读
   final int srcUid;
   final int targetId;
   final TargetType targetType;
   final int createAt; //时间戳 单位豪秒
   final int messageId;
   final SocketMessage message;
-
+  List<int>? originData;
   @override
   String toString() {
-    return 'SocketData{ msid:$messageId, srcUid: $srcUid, targetId: $targetId, targetType: $targetType, createAt: ${DateTime.fromMillisecondsSinceEpoch(createAt)}, message: $message, type:$targetType,contentType:$contentType,status:$status read:$read, sendBySelf:$sendBySelf}';
+    return 'SocketData{ msid:$messageId, srcUid: $srcUid, targetId: $targetId, targetType: $targetType, createAt: ${DateTime.fromMillisecondsSinceEpoch(createAt)}, message: $message, type:$targetType,contentType:$contentType,status:$sendStatus read:$read, sendBySelf:$sendBySelf}';
   }
 
   String get sessionName {
@@ -142,7 +142,7 @@ class SocketData {
       'contentType': contentType.index,
       'message': TypeUtil.parseString(message.toMMap()),
       'read': read ? 1 : 0,
-      'status': status.index,
+      'status': sendStatus.index,
     };
   }
 
@@ -155,11 +155,12 @@ class SocketData {
         createAt: map['createAt'] ?? 0,
         contentType:MsgContentType.values[map['contentType'] ?? 0],
         read: map['read'] == 1 ? true : false,
-        status: Status.values[map['status'] ?? 0],
+        sendStatus: Status.values[map['status'] ?? 0],
         message: SocketMessage.fromMap(TypeUtil.parseMap(map["message"])));
   }
 
   factory SocketData.fromSocketBytes(List<int> data) {
+
     Uint8List bytes = Uint8List.fromList(data);
     ByteData byteData = ByteData.view(bytes.buffer);
     int length = byteData.getUint32(0);
@@ -179,8 +180,8 @@ class SocketData {
         targetType: TargetType.values[targetType],
         contentType: MsgContentType.values[contentType],
         message: SocketMessage.fromMap(TypeUtil.parseMap(message)),
-        status: Status.sending,
+        sendStatus: Status.sending,
         read: false,
-        createAt: timeStamp);
+        createAt: timeStamp,originData:data);
   }
 }

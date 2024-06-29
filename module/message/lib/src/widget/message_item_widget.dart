@@ -67,11 +67,11 @@ class _State extends State<ChatMessageItem> {
 
   void _checkTimeOut() {
     // dog.d('widget.data:${widget.data}');
-    if (widget.data.sendBySelf && widget.data.status == Status.sending) {
+    if (widget.data.sendBySelf && widget.data.sendStatus == Status.sending) {
       // dog.d('widget.data.self:${widget.data}');
-      Future.delayed(const Duration(seconds: 10), () {
-        if (widget.data.status == Status.sending) {
-          widget.data.status = Status.timeOut;
+      Future.delayed(Duration(seconds: Constant.socketTimeOutInSeconds), () {
+        if (widget.data.sendStatus == Status.sending) {
+          widget.data.sendStatus = Status.timeOut;
           DatabaseHelper.instance
               .updateMessage(widget.data, {'status': Status.timeOut.index});
           if (!mounted) return;
@@ -85,7 +85,7 @@ class _State extends State<ChatMessageItem> {
     return [
       // ItemModel('复制', Icons.content_copy),
       // ItemModel('转发', Icons.send),
-      if (widget.data.sendBySelf && widget.data.status == Status.timeOut)
+      if (widget.data.sendBySelf && widget.data.sendStatus == Status.timeOut)
         ItemModel(MenuId.resend, K.getTranslation('resend'), Icons.send),
       // ItemModel('收藏', Icons.collections),
       ItemModel(MenuId.delete, BaseK.K.getTranslation('delete'), Icons.delete),
@@ -105,8 +105,8 @@ class _State extends State<ChatMessageItem> {
     } else if (widget.data.contentType == MsgContentType.ChatImage) {
       if (!widget.data.sendBySelf) {
         //图像上传完毕
-        String imageUrl =
-            System.file('/file/${widget.data.message.extraInfo['filePath']}');
+        String imageUrl = System.file(
+            '/file/${widget.data.message.extraInfo['serverFilePath']}');
         int cachedWidth =
             widget.data.message.extraInfo['imageWidth'] ?? Util.width / 4;
         int cachedHeight = widget.data.message.extraInfo['imageHeight'] ?? 0.0;
@@ -117,7 +117,6 @@ class _State extends State<ChatMessageItem> {
           imageHeight = imageHeight * (Util.width / 4) / imageWidth;
           imageWidth = Util.width / 4;
         }
-
         child = ClipRRect(
           borderRadius: BorderRadius.circular(6),
           child: CachedNetworkImage(
@@ -135,7 +134,7 @@ class _State extends State<ChatMessageItem> {
                     radius: imageWidth * 0.5, color: Colors.white),
           ),
         );
-      } else if (widget.data.message.extraInfo['localPath'] != null) {
+      } else {
         //图像正在上传
         String localPath = widget.data.message.extraInfo['localPath'];
         int cachedWidth =
@@ -158,20 +157,18 @@ class _State extends State<ChatMessageItem> {
                 width: imageWidth,
                 height: imageHeight,
               ),
-              if (widget.data.message.extraInfo['filePath'] == null)
+              if (widget.data.message.extraInfo['serverFilePath'] == null)
                 CupertinoActivityIndicator(
                     radius: imageWidth * 0.5, color: Colors.white),
             ],
           ),
         );
-      }else {
-        child = Container();
       }
     } else if (widget.data.contentType == MsgContentType.ChatAudio) {
       child = ChatAudio(
         isLeft: isLeft,
         isPlaying: widget.playingIndex == widget.listIndex,
-        durationInMillseconds: widget.data.message.extraInfo['duration'],
+        durationInMillseconds: widget.data.message.extraInfo['duration'] ?? 0,
       );
     } else if (widget.data.contentType == MsgContentType.ChatRtcAudio) {
       child = ChatBubble(isLeft: isLeft, text: widget.data.message.content);
@@ -240,7 +237,7 @@ class _State extends State<ChatMessageItem> {
           padding: const EdgeInsetsDirectional.only(top: 20),
           child: _buildUnReadFlagWidget(),
         ),
-      if (widget.data.status == Status.sending &&
+      if (widget.data.sendStatus == Status.sending &&
           widget.data.sendBySelf) //表示正在发送的loading
         Container(
           padding: const EdgeInsetsDirectional.only(top: 20),
@@ -251,7 +248,8 @@ class _State extends State<ChatMessageItem> {
             color: Colors.grey,
           ),
         ),
-      if (widget.data.status == Status.timeOut && widget.data.sendBySelf) //已经超时
+      if (widget.data.sendStatus == Status.timeOut &&
+          widget.data.sendBySelf) //已经超时
         Padding(
           padding: const EdgeInsetsDirectional.only(top: 20),
           child: Image.asset(
@@ -281,9 +279,14 @@ class _State extends State<ChatMessageItem> {
 
   Future _handelTapAudio() async {
     if (widget.listIndex != widget.playingIndex) {
-      String audioUrl =
-          System.file('/file/${widget.data.message.extraInfo['filePath']}');
-      await widget.audiolayer.play(UrlSource(audioUrl));
+      if (widget.data.sendBySelf) {
+        String localPath = widget.data.message.extraInfo['localPath'];
+        await widget.audiolayer.play(DeviceFileSource(localPath));
+      } else {
+        String audioUrl = System.file(
+            '/file/${widget.data.message.extraInfo['serverFilePath']}');
+        await widget.audiolayer.play(UrlSource(audioUrl));
+      }
       widget.onPlayerStatusChange.call(widget.listIndex);
     } else {
       await widget.audiolayer.stop();

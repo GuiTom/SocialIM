@@ -61,7 +61,7 @@ class Net {
               msg: K.getTranslation('netowrk_response_timeout'));
         }else {
           ToastUtil.showCenter(
-              msg: error.message);
+              msg: '${url}:${error.message}');
         }
       }
       dog.d('url:$url=>$error');

@@ -81,7 +81,7 @@ class _State extends State<MessageListWidget> {
               },
               onTap: () {
                 if (widget.messages[index].contentType == MsgContentType.ChatImage) {
-                  _onTapedImageItem(index);
+
                   if(widget.messages[index].srcUid!=Session.uid) {
                     widget.messgageSession.setMessageReadStatus(
                         [widget.messages[index]]);
@@ -111,14 +111,16 @@ class _State extends State<MessageListWidget> {
     List<String> imageUrls = widget.messages
         .where((element) => element.contentType == MsgContentType.ChatImage)
         .mapIndexed((idx, e) {
-      if (widget.messages[index].message.extraInfo['filePath'] ==
-          e.message.extraInfo['filePath']) {
+      if (widget.messages[index].message.extraInfo['serverFilePath'] ==
+          e.message.extraInfo['serverFilePath']) {
         initIndex = idx;
       }
-      return System.file('/file/${e.message.extraInfo['filePath']}');
+      return System.file('/file/${e.message.extraInfo['serverFilePath']}');
     }).toList();
     ImageViewer.show(context, imageUrls: imageUrls, initIndex: initIndex);
   }
 
-  _onTapedAudioItem(int index) {}
+  _onTapedAudioItem(int index) {
+
+  }
 }

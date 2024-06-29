@@ -1,4 +1,5 @@
 import 'package:base/src/widget/unread_dot_widget.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 import 'locale/k.dart';
 import 'package:flutter/material.dart';
@@ -108,102 +109,132 @@ class SessionListPageState extends State<SessionListPage> {
         },
         itemCount: _sessions!.length);
   }
-  Future _toChatPage(String sessionName, int otherUid )async{
 
-
-  }
   Widget _buildListItem(MessageSession messageSession, int index) {
     String sessionName = messageSession.sessionName;
     int? otherUid = messageSession.targetId;
 
-    return GestureDetector(
-      onTap: () async {
-        _selectedRow = index;
-        setState(() {});
-        await ChagePage.show(Constant.context,
-            targetId: otherUid, targetName: sessionName);
-        _selectedRow = -1;
-        await Future.delayed(const Duration(milliseconds: 150));
-        setState(() {});
-        _reload();
-      },
-      onLongPressStart: (LongPressStartDetails details) {
-        _selectedRow = index;
-        setState(() {});
-        _showPopupMenu(context, messageSession, details.globalPosition);
-      },
-      child: Container(
-          color: _selectedRow == index ? const Color(0xFFE1E1E1) : Colors.white,
-          height: 60,
-          child: Row(
-            children: [
-              const SizedBox(
-                width: 8,
+    return Slidable(
+      key: ValueKey(messageSession.sessionId),
+      endActionPane: ActionPane(
+        extentRatio: 0.3,
+        motion: const ScrollMotion(),
+        children: [
+          CustomSlidableAction(
+            backgroundColor: Colors.transparent,
+            flex: 1,
+            padding: EdgeInsets.zero,
+            onPressed: (BuildContext context) {
+              MessageSession.deleteSession(messageSession.sessionId);
+              _reload();
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 13,
               ),
-              Stack(
-                clipBehavior: Clip.none,
-                alignment: AlignmentDirectional.topEnd,
-                children: [
-                  UserHeadWidget(
-                      imageUrl: Util.getHeadIconUrl(otherUid),
-                      size: 40,
-                      isMale: messageSession.peerGender == 1),
-                  if (messageSession.unReadCount > 0)
-                    PositionedDirectional(
-                      top: -5,
-                      end: -5,
-                      child: UnReadDotWidget(count: messageSession.unReadCount),
-                    )
-                ],
+              color: const Color(0xFFDB7FC5),
+              alignment: AlignmentDirectional.center,
+              child: Container(
+                padding: const EdgeInsetsDirectional.all(7),
+                child: const Icon(Icons.delete),
               ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+          )
+        ],
+      ),
+      child: GestureDetector(
+        onTap: () async {
+          _selectedRow = index;
+          setState(() {});
+          await ChagePage.show(Constant.context,
+              targetId: otherUid, targetName: sessionName);
+          _selectedRow = -1;
+          await Future.delayed(const Duration(milliseconds: 150));
+          setState(() {});
+          _reload();
+        },
+        onLongPressStart: (LongPressStartDetails details) {
+          _selectedRow = index;
+          setState(() {});
+          _showPopupMenu(context, messageSession, details.globalPosition);
+        },
+        child: Container(
+            color:
+                _selectedRow == index ? const Color(0xFFE1E1E1) : Colors.white,
+            height: 60,
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 8,
+                ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  alignment: AlignmentDirectional.topEnd,
                   children: [
-                    Padding(
-                      padding:
-                          const EdgeInsetsDirectional.only(start: 12, top: 8),
-                      child: Text(sessionName),
-                    ),
-                    const SizedBox(
-                      height: 2,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        if (messageSession.targetType != TargetType.Private)
-                          Text('[${K.getTranslation('message_count', args: [
-                                messageSession.msgCount
-                              ])}]${messageSession.sessionName}:'),
-                        Text(messageSession.lastData?.message.content ?? ''),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                      ],
-                    )
+                    UserHeadWidget(
+                        imageUrl: Util.getHeadIconUrl(otherUid),
+                        size: 40,
+                        isMale: messageSession.peerGender == 1),
+                    if (messageSession.unReadCount > 0)
+                      PositionedDirectional(
+                        top: -5,
+                        end: -5,
+                        child:
+                            UnReadDotWidget(count: messageSession.unReadCount),
+                      )
                   ],
                 ),
-              ),
-              if (messageSession.lastData != null)
-                Align(
-                  alignment: AlignmentDirectional.topCenter,
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.only(top: 8, end: 12),
-                    child: Text(
-                      TimeUtil.translatedTimeStr(
-                        messageSession.lastData!.createAt.toInt(),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding:
+                            const EdgeInsetsDirectional.only(start: 12, top: 8),
+                        child: Text(sessionName),
                       ),
-                      style: const TextStyle(
-                          color: Color(0xFFA1A1A1), fontSize: 12),
-                    ),
+                      const SizedBox(
+                        height: 2,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          if (messageSession.targetType != TargetType.Private)
+                            Text('[${K.getTranslation('message_count', args: [
+                                  messageSession.msgCount
+                                ])}]${messageSession.sessionName}:'),
+                          Text(messageSession.lastData?.message.content ?? ''),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                        ],
+                      )
+                    ],
                   ),
                 ),
-            ],
-          )),
+                if (messageSession.lastData != null)
+                  Align(
+                    alignment: AlignmentDirectional.topCenter,
+                    child: Padding(
+                      padding:
+                          const EdgeInsetsDirectional.only(top: 8, end: 12),
+                      child: Text(
+                        TimeUtil.translatedTimeStr(
+                          messageSession.lastData!.createAt.toInt(),
+                        ),
+                        style: const TextStyle(
+                            color: Color(0xFFA1A1A1), fontSize: 12),
+                      ),
+                    ),
+                  ),
+              ],
+            )),
+      ),
     );
   }
 

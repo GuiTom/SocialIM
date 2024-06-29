@@ -31,7 +31,7 @@ class Constant {
 
   static const String debugSocketUrl = 'ws://192.168.1.3:8086/ws';
 
-  static const String releaseSocketUrl = 'ws://13.212.217.161:8080/ws';
+  static const String releaseSocketUrl = 'ws://13.212.217.161:8086/ws';
 
   static const String debugServertUrl = 'http://192.168.1.3:8080';
 
@@ -75,4 +75,5 @@ class Constant {
   static String pushToken = '';
   static bool isIos = false;
   static late BuildContext context;
+  static int socketTimeOutInSeconds = 10;
 }

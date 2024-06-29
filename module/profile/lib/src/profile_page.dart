@@ -511,22 +511,22 @@ class _State extends State<ProfilePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        const SizedBox(
-          width: 30,
-        ),
-        Expanded(
-          child: ThrottleInkWell(
-            onTap: () {
-              IMessageRouter messageRouter = (RouterManager.instance
-                  .getModuleRouter(ModuleType.Message) as IMessageRouter)!;
-              messageRouter.toChatPage(_user!.id.toInt(), _user!.name);
-            },
-            child: Button(
-              title: K.getTranslation('private_chat'),
-              buttonSize: ButtonSize.Small,
-            ),
-          ),
-        ),
+        // const SizedBox(
+        //   width: 30,
+        // ),
+        // Expanded(
+        //   child: ThrottleInkWell(
+        //     onTap: () {
+        //       IMessageRouter messageRouter = (RouterManager.instance
+        //           .getModuleRouter(ModuleType.Message) as IMessageRouter)!;
+        //       messageRouter.toChatPage(_user!.id.toInt(), _user!.name);
+        //     },
+        //     child: Button(
+        //       title: K.getTranslation('private_chat'),
+        //       buttonSize: ButtonSize.Small,
+        //     ),
+        //   ),
+        // ),
         const SizedBox(
           width: 30,
         ),
