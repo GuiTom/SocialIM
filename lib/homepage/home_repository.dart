@@ -58,9 +58,9 @@ class HomeRepository extends LoadingMoreBase<HomePageItem> {
       clear();
     }
 
-    LiveRoomListResp resp = await HomeApi.getliveList(page: 1, size: 20);
-    LiveRoomItem partyItem = LiveRoomItem(resp.data);
-    add(partyItem);
+    // LiveRoomListResp resp = await HomeApi.getliveList(page: 1, size: 20);
+    // LiveRoomItem partyItem = LiveRoomItem(resp.data);
+    // add(partyItem);
     if(keyWord?.isNotEmpty??false){
       UserListResp userListResp = await HomeApi.searchUsers(keyWord!,
             _page + 1,20);

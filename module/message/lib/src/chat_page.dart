@@ -334,7 +334,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
     }
 
     int messageId = Random().nextInt(pow(2, 32).toInt());
-    RecorderOverlay.show(context, (recordDetail) async {
+
       var data = SocketRadio.instance.createSocketData({
         'content': keyword,
         'extraInfo': {
@@ -345,12 +345,13 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
       }, widget.targetId, TargetType.Private, MsgContentType.ChatText,
           msgId: messageId);
       SocketData socketData = SocketData.fromSocketBytes(data);
+    _messgaeSession!.insertMessage(socketData);
       SocketRadio.instance.sendMessage(socketData);
-      _messgaeSession!.insertMessage(socketData);
+    _messgaeSession!.upadteMessage(socketData..sendStatus=Status.reached);
       _textController.clear();
       _showEmojiPanel = false;
       setState(() {});
-    });
+
   }
 
   Widget _renderBottomToolButtons() {
@@ -510,10 +511,12 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
     if (resp.code == 1) {
       socketData.message.extraInfo['serverFilePath'] = resp.filePath;
       socketData.originData = SocketRadio.instance.createSocketData({
-        'content': '[${K.getTranslation('voice')}]',
+        'content': '[${K.getTranslation('image')}]',
         'extraInfo': {
           'senderName': Session.userInfo.name,
           'senderGender': Session.userInfo.sex,
+          'imageWidth': imageWidth,
+          'imageHeight': imageHeight,
           'receiverName': widget.targetName,
           'serverFilePath':resp.filePath
         }

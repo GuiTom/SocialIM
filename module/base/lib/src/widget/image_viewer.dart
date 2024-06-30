@@ -54,7 +54,15 @@ class _State extends State<ImageViewer> {
         scrollPhysics: const BouncingScrollPhysics(),
         builder: (BuildContext context, int index) {
           return PhotoViewGalleryPageOptions(
-            imageProvider: NetworkImage(widget.imageUrls[_currentPageIndex]),
+            imageProvider: (){
+              ImageProvider? imageProvider;
+              if(!widget.imageUrls[_currentPageIndex].startsWith('http')) {
+                imageProvider = FileImage(File(widget.imageUrls[_currentPageIndex]));
+              }else {
+                imageProvider = NetworkImage(widget.imageUrls[_currentPageIndex]);
+              }
+              return imageProvider;
+            }(),
             initialScale: PhotoViewComputedScale.contained,
             heroAttributes: PhotoViewHeroAttributes(
                 tag: widget.imageUrls[_currentPageIndex]),

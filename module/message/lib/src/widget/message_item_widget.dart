@@ -131,7 +131,7 @@ class _State extends State<ChatMessageItem> {
               String url,
             ) =>
                 CupertinoActivityIndicator(
-                    radius: imageWidth * 0.5, color: Colors.white),
+                    radius: imageWidth * 0.2, color: Colors.white),
           ),
         );
       } else {
@@ -139,7 +139,6 @@ class _State extends State<ChatMessageItem> {
         String localPath = widget.data.message.extraInfo['localPath'];
         int cachedWidth =
             widget.data.message.extraInfo['imageWidth'] ?? Util.width / 4;
-
         int cachedHeight = widget.data.message.extraInfo['imageHeight'] ?? 0.0;
         double imageWidth = cachedWidth.toDouble();
         double imageHeight = cachedHeight.toDouble();
@@ -157,9 +156,6 @@ class _State extends State<ChatMessageItem> {
                 width: imageWidth,
                 height: imageHeight,
               ),
-              if (widget.data.message.extraInfo['serverFilePath'] == null)
-                CupertinoActivityIndicator(
-                    radius: imageWidth * 0.5, color: Colors.white),
             ],
           ),
         );

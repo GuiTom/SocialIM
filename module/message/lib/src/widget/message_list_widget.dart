@@ -6,12 +6,18 @@ import 'message_item_widget.dart';
 import 'package:base/src/widget/image_viewer.dart';
 
 class MessageListWidget extends StatefulWidget {
-  const MessageListWidget({Key? key, required this.messgageSession,required this.messages,required this.onScrollToTop, required this.targetName})
+  const MessageListWidget(
+      {Key? key,
+      required this.messgageSession,
+      required this.messages,
+      required this.onScrollToTop,
+      required this.targetName})
       : super(key: key);
   final void Function() onScrollToTop;
   final MessageSession messgageSession;
   final List<SocketData> messages;
   final String targetName;
+
   @override
   State<StatefulWidget> createState() => _State();
 }
@@ -19,7 +25,7 @@ class MessageListWidget extends StatefulWidget {
 class _State extends State<MessageListWidget> {
   final AudioPlayer _mPlayer = AudioPlayer();
   int _playingIndex = -1;
-  
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +39,7 @@ class _State extends State<MessageListWidget> {
     });
     _controller.addListener(() {
       // dog.d('_controller.position:${_controller.offset}');
-      if(_controller.offset==0.0){
+      if (_controller.offset == 0.0) {
         widget.onScrollToTop.call();
       }
     });
@@ -63,7 +69,6 @@ class _State extends State<MessageListWidget> {
   }
 
   Widget _renderMessageList() {
-
     return Expanded(
       child: ListView.separated(
           controller: _controller,
@@ -80,19 +85,19 @@ class _State extends State<MessageListWidget> {
                 setState(() {});
               },
               onTap: () {
-                if (widget.messages[index].contentType == MsgContentType.ChatImage) {
-
-                  if(widget.messages[index].srcUid!=Session.uid) {
-                    widget.messgageSession.setMessageReadStatus(
-                        [widget.messages[index]]);
+                if (widget.messages[index].contentType ==
+                    MsgContentType.ChatImage) {
+                  if (widget.messages[index].srcUid != Session.uid) {
+                    widget.messgageSession
+                        .setMessageReadStatus([widget.messages[index]]);
                   }
+                  _onTapedImageItem(index);
                   setState(() {});
                 } else if (widget.messages[index].contentType ==
                     MsgContentType.ChatAudio) {
-                  _onTapedAudioItem(index);
-                  if(widget.messages[index].srcUid!=Session.uid) {
-                    widget.messgageSession.setMessageReadStatus(
-                        [widget.messages[index]]);
+                  if (widget.messages[index].srcUid != Session.uid) {
+                    widget.messgageSession
+                        .setMessageReadStatus([widget.messages[index]]);
                   }
                   setState(() {});
                 }
@@ -115,12 +120,14 @@ class _State extends State<MessageListWidget> {
           e.message.extraInfo['serverFilePath']) {
         initIndex = idx;
       }
-      return System.file('/file/${e.message.extraInfo['serverFilePath']}');
+      String? uri;
+      if (e.message.extraInfo['localPath'] != null) {
+        uri = e.message.extraInfo['localPath'] ?? '';
+      }else{
+        uri = System.file('/file/${e.message.extraInfo['serverFilePath']}');
+      }
+      return uri!;
     }).toList();
     ImageViewer.show(context, imageUrls: imageUrls, initIndex: initIndex);
-  }
-
-  _onTapedAudioItem(int index) {
-
   }
 }
