@@ -41,6 +41,7 @@ class MessageRouter implements IMessageRouter {
     if (object is! SocketData) return;
     await _lock.synchronized(() async {
       SocketData socketData = object;
+      print('msgid:${socketData}');
       if (socketData.targetType == TargetType.Group ||
           socketData.targetType == TargetType.Private) {
         MessageSession session = (await MessageSession.getSession(
@@ -111,6 +112,7 @@ class MessageRouter implements IMessageRouter {
                 socketData.messageId,
                 socketData.message.extraInfo['senderName'],
                 channelId: socketData.message.extraInfo['channelId'],
+                socketData: socketData,
               );
             }
           }

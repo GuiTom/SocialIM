@@ -254,7 +254,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
       behavior: HitTestBehavior.translucent,
       onLongPress: () async {
         // dog.d('on-LongPress:onLongPress');
-        int messageId = Random().nextInt(pow(2, 32).toInt());
+        int messageId = Random().nextInt(pow(2, 32).toInt()) + DateTime.now().millisecondsSinceEpoch;;
         RecorderOverlay.show(context, (recordDetail) async {
           var data = SocketRadio.instance.createSocketData({
             'content': '[${K.getTranslation('voice')}]',
@@ -333,7 +333,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
       FocusScope.of(context).requestFocus(_focusNode);
     }
 
-    int messageId = Random().nextInt(pow(2, 32).toInt());
+    int messageId = Random().nextInt(pow(2, 32).toInt()) + DateTime.now().millisecondsSinceEpoch;;
 
       var data = SocketRadio.instance.createSocketData({
         'content': keyword,
@@ -485,7 +485,7 @@ class _State extends State<ChagePage> with WidgetsBindingObserver {
     int imageHeight = image!.height;
 
     CommonLoading.show();
-    int messageId = Random().nextInt(pow(2, 32).toInt());
+    int messageId = Random().nextInt(pow(2, 32).toInt()) + DateTime.now().millisecondsSinceEpoch;;
     var data = SocketRadio.instance.createSocketData({
       'content': '[${K.getTranslation('picture')}]',
       'extraInfo': {

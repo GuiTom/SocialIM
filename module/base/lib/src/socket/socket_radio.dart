@@ -15,32 +15,36 @@ import '../model/socket_data.dart';
 
 class SocketRadio {
   SocketRadio._();
+
   static SocketRadio? _instance;
 
   WebSocket? _webSocket;
   bool _noRetry = false;
+
   static SocketRadio get instance {
     _instance ??= SocketRadio._();
     return _instance!;
   }
 
-  reconnect() async{
+  reconnect() async {
     close();
-    if(_webSocket?.readyState!=WebSocket.connecting) {
+    if (_webSocket?.readyState != WebSocket.connecting) {
       await connect(Constant.socketUrl);
     }
-   dog.d('reconnect:${_webSocket?.readyState}');
+    dog.d('reconnect:${_webSocket?.readyState}');
   }
 
   close() {
     _webSocket?.close();
     _webSocket = null;
   }
+
   froze() {
     _noRetry = true;
     _webSocket?.close();
     _webSocket = null;
   }
+
   cancelFroze() {
     _noRetry = false;
   }
@@ -52,76 +56,83 @@ class SocketRadio {
       _webSocket?.listen(_onData,
           onError: _onError, cancelOnError: true, onDone: _onDone);
       _webSocket!.pingInterval = const Duration(seconds: 30);
-    }catch(e){
+    } catch (e) {
       dog.d(e);
     }
 
     _register();
-
   }
+
   void _onData(data) {
     // dog.i('$socketName _receivePackages message:$message', tag: LOG_TAG);
-    if (data is List<int>) {          SocketData socketData = SocketData.fromSocketBytes(data);
-          eventCenter.emit("socket_message", socketData);
+    if (data is List<int>) {
+      SocketData socketData = SocketData.fromSocketBytes(data);
+      eventCenter.emit("socket_message", socketData);
     }
   }
+
   void _onError(Object error, StackTrace stackTrace) async {
     dog.d('socket error:$error');
     close();
-    if(!_noRetry) {
+    if (!_noRetry) {
       _asureConnection();
     }
   }
+
   void _onDone() async {
     close();
-    if(!_noRetry) {
+    if (!_noRetry) {
       _asureConnection();
     }
   }
+
   void _asureConnection() {
-    _timer ??= Timer.periodic(const Duration(seconds: 3), (timer) async{
+    _timer ??= Timer.periodic(const Duration(seconds: 3), (timer) async {
       dog.d('timerLoop');
       if (_webSocket?.readyState != WebSocket.open) {
-       await reconnect();
-      }else {
+        await reconnect();
+      } else {
         _timer?.cancel();
       }
     });
   }
 
   Timer? _timer;
-  //targetType 1,普通用户,2。群组，房间等
- Future<SocketData> sendMessage(SocketData data) async{
 
+  //targetType 1,普通用户,2。群组，房间等
+  Future<SocketData> sendMessage(SocketData data) async {
     if (_webSocket?.readyState != WebSocket.open) {
-     await connect(Constant.socketUrl);
+      await connect(Constant.socketUrl);
     }
 
     _webSocket?.add(data.originData!);
 
     return data;
   }
-  List<int> createSocketData(Map message, int targetId, TargetType targetType,MsgContentType contentType,{int? msgId}){
+
+  List<int> createSocketData(Map message, int targetId, TargetType targetType,
+      MsgContentType contentType,
+      {int? msgId}) {
     DateTime now = DateTime.now();
     int timestamp = now.millisecondsSinceEpoch;
     String messageStr = TypeUtil.parseString(message);
     var body = Uint8List.fromList(utf8.encode(messageStr));
-    var head = ByteData(25);
-    int length = 25 + body.length;
-    head.setUint32(0, length);
-    head.setInt32(4, Session.uid);
-    head.setInt32(8, targetId);
-    int types = (targetType.index<<4&0xF0)|(contentType.index&0xF);
-    head.setInt8(12, types);
-    head.setInt64(13, timestamp);
-    head.setUint32(21, msgId!);
+    var head = ByteData(29);
+    int length = 29 + body.length;
+    head.setUint32(0, length);//4byte (包总长度)
+    head.setUint32(4, Session.uid);//4byte(自己方UID)
+    head.setUint32(8, targetId);//4byte(接送方的UID)
+    int types = (targetType.index << 4 & 0xF0) | (contentType.index & 0xF);//4bit targetType + 4bit contetntType
+    head.setUint8(12, types);
+    head.setUint64(13, timestamp);//8byte 时间戳
+    head.setUint64(21, msgId!);//4 byte 消息id
     var data = head.buffer.asUint8List(0, head.lengthInBytes).cast<int>() +
         body.toList();
     return data;
   }
 
   //targetType 1,普通用户,2。群组，房间等
-  reSendMessage(SocketData socketData) async{
+  reSendMessage(SocketData socketData) async {
     String messageStr = TypeUtil.parseString(socketData.message.toRawMap());
     var body = Uint8List.fromList(utf8.encode(messageStr));
 
@@ -130,7 +141,8 @@ class SocketRadio {
     head.setUint32(0, length);
     head.setInt32(4, socketData.srcUid);
     head.setInt32(8, socketData.targetId);
-    int types = (socketData.targetType.index<<4)&socketData.contentType.index;
+    int types =
+        (socketData.targetType.index << 4) & socketData.contentType.index;
     head.setInt8(12, types);
     head.setInt64(13, socketData.createAt);
     head.setUint32(21, socketData.messageId);
@@ -151,8 +163,8 @@ class SocketRadio {
     _webSocket?.add(data);
   }
 
-  // disconnect() {
-  //   _webSocket?.close();
-  //   _webSocket = null;
-  // }
+// disconnect() {
+//   _webSocket?.close();
+//   _webSocket = null;
+// }
 }

@@ -18,7 +18,8 @@ class VideoCallPage extends StatefulWidget {
       this.token,
       this.channelId,
       required this.messageId,
-      this.socketData, required this.targetName});
+      this.socketData,
+      required this.targetName});
 
   final bool isVideo;
   final int targetUid;
@@ -44,7 +45,8 @@ class VideoCallPage extends StatefulWidget {
             targetUid: targetUid,
             channelId: channelId,
             messageId: messageId,
-            socketData: socketData, targetName: targetName,
+            socketData: socketData,
+            targetName: targetName,
           );
         });
   }
@@ -67,6 +69,7 @@ class _State extends State<VideoCallPage> {
   late int _targetUid;
   CallStatus _callStatus = CallStatus.Calling;
   Offset _remoteVideoOffset = const Offset(20.0, 60.0);
+
   @override
   void initState() {
     super.initState();
@@ -86,21 +89,30 @@ class _State extends State<VideoCallPage> {
     SocketData _primaryData = (data as List).last;
     if (_data.contentType == MsgContentType.ChatRtcHandshakeChange) {
       if (!mounted) return;
-      if (_data.message.extraInfo['handshakeStatus'] == 'rejected') {
+      if (_data.message.extraInfo['handshakeStatus'] ==
+          HandShakeStatus.accepted.name) {
+        _join();
+        return;
+      } else if (_data.message.extraInfo['handshakeStatus'] ==
+          HandShakeStatus.rejected.name) {
         if (_data.targetId == Session.uid) {
           ToastUtil.showCenter(msg: K.getTranslation('the_peer_rejected'));
         } else {
           ToastUtil.showCenter(msg: K.getTranslation('rejected'));
         }
-      } else if (_data.message.extraInfo['handshakeStatus'] == 'canceled') {
+      } else if (_data.message.extraInfo['handshakeStatus'] ==
+          HandShakeStatus.canceled.name) {
         ToastUtil.showCenter(msg: K.getTranslation('canceled'));
-
-      } else if (_data.message.extraInfo['handshakeStatus'] == 'timeout') {
+      } else if (_data.message.extraInfo['handshakeStatus'] ==
+          HandShakeStatus.timeout.name) {
         ToastUtil.showCenter(msg: K.getTranslation('no_answer'));
-      } else if (_data.message.extraInfo['handshakeStatus'] == 'finished') {
+      } else if (_data.message.extraInfo['handshakeStatus'] ==
+          HandShakeStatus.finished.name) {
         ToastUtil.showCenter(msg: K.getTranslation('session_ended'));
       }
-      if (!(_data.message.extraInfo['handshakeStatus'] == 'timeout'&&!_primaryData.sendBySelf)) {
+      if (!(_data.message.extraInfo['handshakeStatus'] ==
+              HandShakeStatus.timeout.name &&
+          !_primaryData.sendBySelf)) {
         MessageSession session = (await MessageSession.getSession(
             targetType: _primaryData.targetType,
             targetId: _targetUid,
@@ -108,7 +120,6 @@ class _State extends State<VideoCallPage> {
             sessionId: _primaryData.sessionId ?? ''));
         session.setMessageReadStatus([_primaryData]);
       }
-      await _engine!.leaveChannel();
       if (!mounted) return;
       Navigator.pop(context);
       eventCenter.emit('messageAded');
@@ -121,6 +132,19 @@ class _State extends State<VideoCallPage> {
         _channelId!, Session.uid, ClientRoleType.clientRoleBroadcaster);
     if (resp?.code == 1 ?? false) {
       _token = resp!.token;
+
+      if (widget.channelId == null) {
+        SocketData socketData = await RtcApi.sendNotificationCallPeer(
+            _targetUid, _isVideo, _token ?? '', _channelId!);
+        _messageId = socketData.messageId;
+        MessageSession session = (await MessageSession.getSession(
+            targetType: TargetType.Private,
+            targetId: _targetUid,
+            sessionName: socketData.sessionName,
+            sessionId: socketData.sessionId ?? ''));
+        session.insertMessage(socketData);
+        _startTimeCount();
+      }
       initAgora();
     }
     return null;
@@ -141,33 +165,30 @@ class _State extends State<VideoCallPage> {
       RtcEngineEventHandler(
           onJoinChannelSuccess: (RtcConnection connection, int elapsed) async {
         debugPrint("local user ${connection.localUid} joined");
+        RtcApi.sendNotificationAcceptCall(
+            widget.targetUid, _messageId);
+        ToastUtil.showCenter(msg: 'self joined');
         setState(() {
           _localUserJoined = true;
-          _remoteUid = _targetUid;
-          if (!isCaller) {
-            _callStatus = CallStatus.Connected;
-          }
+          _callStatus = CallStatus.Connected;
         });
-        if (widget.channelId == null) {
-          _messageId = await RtcApi.sendNotificationCallPeer(
-              _targetUid,  _isVideo, _token ?? '', _channelId!);
-          _startTimeCount();
-        }
       }, onRejoinChannelSuccess: (RtcConnection connection, int elapsed) async {
         debugPrint("local user ${connection.localUid} joined");
         setState(() {
           _localUserJoined = true;
           _remoteUid = _targetUid;
-          if (!isCaller) {
+
             _callStatus = CallStatus.Connected;
-          }
+
         });
         if (widget.channelId == null) {
-          _messageId = await RtcApi.sendNotificationCallPeer(
+          SocketData socketData = await RtcApi.sendNotificationCallPeer(
               _targetUid, _isVideo, _token ?? '', _channelId!);
+          _messageId = socketData.messageId;
         }
       }, onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
         debugPrint("remote user $remoteUid joined");
+        ToastUtil.showCenter(msg: 'remove joined');
         setState(() {
           _remoteUid = remoteUid;
           _callStatus = CallStatus.Connected;
@@ -179,7 +200,7 @@ class _State extends State<VideoCallPage> {
         _callStatus = CallStatus.Closed;
         if (remoteUid != Session.uid) {
           eventCenter.emit('messageAded');
-          // if(!mounted) return;
+          if (!mounted) return;
           // Navigator.pop(context);
         }
         _stopTimeCount();
@@ -202,9 +223,13 @@ class _State extends State<VideoCallPage> {
     await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
     if (_isVideo) {
       await _engine!.enableVideo();
-
       await _engine!.startPreview();
     }
+
+    setState(() {});
+  }
+
+  void _join() async {
     if (isCaller) {
       //是主叫方
       await _engine!.joinChannel(
@@ -214,7 +239,6 @@ class _State extends State<VideoCallPage> {
         options: const ChannelMediaOptions(),
       );
     }
-    setState(() {});
   }
 
   bool get isCaller {
@@ -251,23 +275,21 @@ class _State extends State<VideoCallPage> {
               start: _remoteVideoOffset.dx,
               top: _remoteVideoOffset.dy,
               child: Draggable(
-                feedback:Container(
+                feedback: Container(
                   width: 100,
                   height: 150,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     color: Colors.blue.withOpacity(0.5),
                   ),
-                ) ,
-                onDragUpdate: (DragUpdateDetails details){
+                ),
+                onDragUpdate: (DragUpdateDetails details) {
                   _remoteVideoOffset = details.delta;
-                  setState(() {
-                  });
+                  setState(() {});
                 },
-                onDragEnd: (DraggableDetails details){
+                onDragEnd: (DraggableDetails details) {
                   _remoteVideoOffset = details.offset;
-                  setState(() {
-                  });
+                  setState(() {});
                 },
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
@@ -285,7 +307,6 @@ class _State extends State<VideoCallPage> {
                   ),
                 ),
               ),
-
             ),
           _buildPeerAvatarWidget(),
           _buildOptionLayer(),
@@ -302,9 +323,16 @@ class _State extends State<VideoCallPage> {
         child: Column(
           children: [
             UserHeadWidget(
-                imageUrl: Util.getHeadIconUrl(widget.targetUid.toInt()), size: 100),
-            const SizedBox(height: 12,),
-            Text(widget.targetName,style: const TextStyle(color: Colors.white,fontWeight: FontWeight.w600),),
+                imageUrl: Util.getHeadIconUrl(widget.targetUid.toInt()),
+                size: 100),
+            const SizedBox(
+              height: 12,
+            ),
+            Text(
+              widget.targetName,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w600),
+            ),
           ],
         ),
       ),
@@ -463,8 +491,8 @@ class _State extends State<VideoCallPage> {
               onPressed: () async {
                 if (_callStatus == CallStatus.Connected) {
                   //挂断
-                  ToastUtil.showTop(msg: K.getTranslation('already_hang_up'));
-                  RtcApi.sendNotificationHangup(
+
+                  await RtcApi.sendNotificationHangup(
                       _targetUid, _timer?.tick ?? 0, _messageId);
                   MessageSession session = (await MessageSession.getSession(
                       targetType: widget.socketData!.targetType,
@@ -472,14 +500,15 @@ class _State extends State<VideoCallPage> {
                       sessionName: widget.socketData!.sessionName,
                       sessionId: widget.socketData!.sessionId ?? ''));
                   session.setMessageReadStatus([widget.socketData!]);
+                  ToastUtil.showTop(msg: K.getTranslation('already_hang_up'));
                 } else if (isCaller) {
                   ToastUtil.showTop(msg: K.getTranslation('canceled'));
                   RtcApi.sendNotificationCancelToPeer(_targetUid, _messageId);
                 }
                 // await _engine!.leaveChannel();
                 // await Future.delayed(const Duration(milliseconds: 400));
-                // if (!mounted) return;
-                // Navigator.pop(context);
+                if (!mounted) return;
+                Navigator.pop(context);
               },
               icon: SvgPicture.asset(
                 'assets/icon_to_hangup.svg',
@@ -504,7 +533,7 @@ class _State extends State<VideoCallPage> {
                 session.setMessageReadStatus([widget.socketData!]);
                 // await Future.delayed(const Duration(milliseconds: 400));
                 // if (!mounted) return;
-                // Navigator.pop(context);
+                Navigator.pop(context);
               },
               icon: SvgPicture.asset(
                 'assets/icon_to_hangup.svg',
@@ -521,6 +550,7 @@ class _State extends State<VideoCallPage> {
                     uid: Session.uid,
                     options: const ChannelMediaOptions(),
                   );
+
                 },
                 icon: SvgPicture.asset(
                   'assets/icon_to_accept_call.svg',

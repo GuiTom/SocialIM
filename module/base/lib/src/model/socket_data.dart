@@ -34,7 +34,8 @@ enum HandShakeStatus{
   rejected,
   canceled,
   timeout,
-  finished
+  finished,
+  accepted,
 }
 class SocketMessage {
   SocketMessage(
